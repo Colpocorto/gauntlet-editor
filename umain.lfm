@@ -1,0 +1,115 @@
+object fMain: TfMain
+  Left = 350
+  Height = 679
+  Top = 250
+  Width = 1200
+  Caption = 'fMain'
+  ClientHeight = 679
+  ClientWidth = 1200
+  Color = 3881787
+  OnCreate = FormCreate
+  OnResize = FormResize
+  object hSplitter: TPairSplitter
+    Left = 0
+    Height = 679
+    Top = 0
+    Width = 1576
+    Align = alCustom
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Color = clBlack
+    Position = 800
+    OnChangeBounds = hSplitterChangeBounds
+    object hSplitterLeft: TPairSplitterSide
+      Cursor = crArrow
+      Left = 0
+      Height = 679
+      Top = 0
+      Width = 800
+      ChildSizing.ShrinkHorizontal = crsHomogenousSpaceResize
+      ClientWidth = 800
+      ClientHeight = 679
+      object dgMap: TDrawGrid
+        Left = 0
+        Height = 679
+        Top = 0
+        Width = 800
+        Align = alTop
+        Anchors = [akTop, akBottom]
+        AutoAdvance = aaNone
+        AutoEdit = False
+        BorderSpacing.CellAlignHorizontal = ccaCenter
+        BorderStyle = bsNone
+        Color = 7083008
+        ColCount = 34
+        DefaultColWidth = 24
+        DefaultRowHeight = 24
+        DoubleBuffered = True
+        ExtendedSelect = False
+        FixedCols = 0
+        FixedRows = 0
+        Flat = True
+        GridLineColor = 8408329
+        HeaderHotZones = []
+        HeaderPushZones = []
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goSmoothScroll]
+        ParentDoubleBuffered = False
+        RowCount = 34
+        TabOrder = 0
+        TitleStyle = tsNative
+        OnClick = dgMapClick
+        OnDrawCell = dgMapDrawCell
+        OnMouseMove = dgMapMouseMove
+      end
+    end
+    object hSplitterRight: TPairSplitterSide
+      Cursor = crArrow
+      Left = 805
+      Height = 679
+      Top = 0
+      Width = 771
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ClientWidth = 771
+      ClientHeight = 679
+      object scrollOptions: TScrollBox
+        Left = 0
+        Height = 679
+        Top = 0
+        Width = 771
+        HorzScrollBar.Increment = 32
+        HorzScrollBar.Page = 1
+        HorzScrollBar.Visible = False
+        VertScrollBar.Increment = 1
+        VertScrollBar.Page = 1
+        VertScrollBar.Smooth = True
+        VertScrollBar.Tracking = True
+        Align = alClient
+        BorderStyle = bsNone
+        Color = 3092271
+        ParentBackground = False
+        ParentColor = False
+        TabOrder = 0
+      end
+    end
+  end
+  object appProp: TApplicationProperties
+    OnActionExecute = appPropActionExecute
+    Left = 392
+    Top = 200
+  end
+  object alMain: TActionList
+    Left = 282
+    Top = 314
+  end
+  object timerMain: TTimer
+    OnTimer = timerMainTimer
+    Left = 232
+    Top = 174
+  end
+  object BCEPanelsOpt: TBCExpandPanels
+    ArrangeKind = akTop
+    OnArrangePanels = BCEPanelsOptArrangePanels
+    Behaviour = EPMultipanel
+    Left = 489
+    Top = 348
+  end
+end
