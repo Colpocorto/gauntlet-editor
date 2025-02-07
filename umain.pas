@@ -7,8 +7,9 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
   PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, DividerBevel, Types,
-  uData, ActnList, ComCtrls, LResources, StdCtrls, LCLIntf, LCLtype,
-  BCExpandPanels;
+  uData, ActnList, ComCtrls, LResources, StdCtrls, LCLIntf, LCLtype, cyNavPanel,
+  cySplitter, cyTabControl, BCExpandPanels, BCGameGrid, attabs, ECTabCtrl,
+  uETilePanel;
 
 type
 
@@ -17,11 +18,13 @@ type
   TfMain = class(TForm)
     alMain: TActionList;
     appProp: TApplicationProperties;
+    tabsMain: TATTabs;
     BCEPanelsOpt: TBCExpandPanels;
     dgMap: TDrawGrid;
     hSplitter: TPairSplitter;
     hSplitterLeft: TPairSplitterSide;
     hSplitterRight: TPairSplitterSide;
+    ImageList1: TImageList;
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
     timerMain: TTimer;
@@ -36,9 +39,14 @@ type
     procedure FormResize(Sender: TObject);
     procedure hSplitterChangeBounds(Sender: TObject);
     procedure panOptionsClick(Sender: TObject);
+    procedure tabsMainClick(Sender: TObject);
+    procedure tabsMainTabChanged(Sender: TObject);
+    procedure tabsMainTabPlusClick(Sender: TObject);
     procedure timerMainTimer(Sender: TObject);
     procedure CreateOptionPanels(Container: TControl);
     procedure CreateInfoCtrls(Container: TControl);
+    procedure WriteCell(grid: TCustomGrid; index: integer);
+    function AddNewMaze: integer;
   private
 
     index_repaint_needed: boolean;
@@ -48,7 +56,7 @@ type
 
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
-procedure WriteCell(grid: TCustomGrid; index: integer);
+
 function GetShiftState(): TShiftState;
 
 var
@@ -63,16 +71,15 @@ implementation
 procedure TfMain.FormCreate(Sender: TObject);
 begin
 
-  //Initialize maps
-  uData.initMap(mapData);
-  uData.initMap(visitedData);
-
-  self.index_repaint_needed := True;
+  //self.index_repaint_needed := True;
 
   //Load graphics
-  uData.loadGraphics(self.scrollOptions);
+  uData.loadGraphics(self, dgMap.DefaultColWidth);
 
   //Create controls dynamically
+
+  //Create tabs
+  AddNewMaze;
 
   //Create expandable panels
   CreateOptionPanels(self.hSplitterRight);
@@ -90,9 +97,21 @@ begin
   timerMain.Enabled := True;
 
 end;
+
+function TfMain.AddNewMaze: integer;
+var
+  tab1: TATTabData;
+begin
+  tab1 := TATTabData.Create(nil);
+  tab1.TabCaption := 'New Maze ' + IntToStr(tabsMain.TabCount + 1);
+  tab1.TabObject := TGauntMaze.Create;
+  TGauntMaze(tab1.TabObject).Name := tab1.TabCaption;
+  tabsMain.AddTab(0, tab1);
+  tabsMain.ShowTab(0);
+end;
+
 procedure TfMain.CreateInfoCtrls(Container: TControl);
 begin
-
 
 end;
 
@@ -136,6 +155,21 @@ begin
 
 end;
 
+procedure TfMain.tabsMainClick(Sender: TObject);
+begin
+
+end;
+
+procedure TfMain.tabsMainTabChanged(Sender: TObject);
+begin
+
+end;
+
+procedure TfMain.tabsMainTabPlusClick(Sender: TObject);
+begin
+  self.AddNewMaze;
+end;
+
 procedure TfMain.timerMainTimer(Sender: TObject);
 begin
   dgMap.Repaint;
@@ -174,27 +208,28 @@ begin
       //normalize col/row first to match matrix indices
       MapCol := aCol - 1;
       MapRow := aRow - 1;
-
-      case uData.mapData[MapCol, MapRow] of
+      case TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[MapCol,
+          MapRow] of
         0:
         begin
           dgMap.Canvas.Brush.Color := dgMap.Color;
           dgMap.Canvas.FillRect(aRect);      //delete block
         end;
-        1..31: ilMap.Draw(dgMap.Canvas,
-            aRect.TopLeft.X, aRect.TopLeft.Y, 0, True);
+        1..31:
+          ilMap.Draw(dgMap.Canvas,
+            aRect.TopLeft.X, aRect.TopLeft.Y, 5, True);
+
       end;
 
     end;
   end;
-
 end;
 
 procedure TfMain.dgMapMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
 begin
   if ssLeft in Shift then
   begin
-    if ssCtrl in Shift then
+    if ssAlt in Shift then
     begin
       WriteCell(dgMap, 0);
     end
@@ -222,7 +257,7 @@ end;
 
 procedure TfMain.dgMapClick(Sender: TObject);
 begin
-  if ssCtrl in GetShiftState then
+  if ssAlt in GetShiftState then
   begin
     WriteCell(dgMap, 0);
   end
@@ -246,7 +281,7 @@ begin
 
 end;
 
-procedure WriteCell(grid: TCustomGrid; index: integer);
+procedure TfMain.WriteCell(grid: TCustomGrid; index: integer);
 var
   Col, Row: integer;
 begin
@@ -256,7 +291,8 @@ begin
   if (Col > 0) and (Col < 33) and (Row > 0) and (Row < 33) then
   begin
     //update map matrix
-    uData.mapData[Col - 1, Row - 1] := index;
+    TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
+      1, Row - 1] := index;
 
   end;
 
