@@ -26,25 +26,22 @@
     </RunParams>
     <RequiredPackages>
       <Item>
-        <PackageName Value="atflatcontrols_package"/>
-      </Item>
-      <Item>
-        <PackageName Value="pl_Cindy"/>
-      </Item>
-      <Item>
-        <PackageName Value="eccontrols"/>
-      </Item>
-      <Item>
-        <PackageName Value="uEControls"/>
-      </Item>
-      <Item>
-        <PackageName Value="bgracontrols"/>
+        <PackageName Value="pl_ExControls"/>
       </Item>
       <Item>
         <PackageName Value="LazControls"/>
       </Item>
       <Item>
         <PackageName Value="LazControlDsgn"/>
+      </Item>
+      <Item>
+        <PackageName Value="atflatcontrols_package"/>
+      </Item>
+      <Item>
+        <PackageName Value="pl_Cindy"/>
+      </Item>
+      <Item>
+        <PackageName Value="bgracontrols"/>
       </Item>
       <Item>
         <PackageName Value="laz.virtualtreeview_package"/>

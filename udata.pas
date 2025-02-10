@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, Controls, Graphics, LazLoggerBase;
 
 type
-  TGauntMap = array[0..31, 0..31] of integer;
+  TGauntMap = array[0..31, 0..31] of byte;
   TLayer = (background, objects, positions);
   TGauntOrgType = (wall, trap_bound_wall, gate_h, gate_v, exit);
   TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
@@ -19,7 +19,7 @@ type
     desc: string;
   end;
   TCustomGauntTraceCmd = class abstract(TObject);
-
+  //TCustomGauntItemCmd = class abstract(TObject);
   TGauntTraceOrigin = class(TCustomGauntTraceCmd)
     col, row: smallint;
     orgType: TGauntOrgType;
@@ -32,22 +32,42 @@ type
 
   TGauntMaze = class
   private
-    FTraceLayer: TList;
-    FItemsLayer: TList;
+    FSize: integer;  //0-511
+    FHorzWrap: boolean;
+    FVertWrap: boolean;
+    FFindThePotion: boolean;
+    FStunPlayers: boolean;
+    FHurtPlayers: boolean;
+    //FTraceLayer: TList;
+    //FItemsLayer: TList;
     FName: string;
-    FMapData: TGauntMap;
+    //FMapData: TGauntMap;
     FVisitedData: TGauntMap;
+    FStyle: TGauntStyle;
+    FBuffer: TMemoryStream;
     procedure InitMap(var map: TGauntMap);
   public
     MapData: TGauntMap;
+    ItemData: TGauntMap;
     VisitedData: TGauntMap;
+
     constructor Create;
     destructor Destroy; override;
     function getTraceLayerSize(): integer;
     function getItemsLayersize(): integer;
     property Name: string read FName write FName;
+    property HorzWrap: boolean read FHorzWrap write FHorzWrap;
+    property VertWrap: boolean read FVertWrap write FVertWrap;
+    property FindThePotion: boolean read FFindThePotion write FFindThePotion;
+    property StunPlayers: boolean read FStunPlayers write FStunPlayers;
+    property HurtPlayers: boolean read FHurtPlayers write FHurtPlayers;
+    property Style: TGauntStyle read FStyle write FStyle;
+
+    function getSize: integer;
     procedure InitMapData;
+    procedure InitItemData;
     procedure InitVisitedData;
+    procedure ToFileStream(fs: TFileStream);
   end;
 
   TPictureIndex = record
@@ -74,22 +94,22 @@ const
   Widths: array[0..6] of integer = (16, 24, 32, 48, 64, 96, 128);
   patternIndex: array of TPictureIndex = (
     (id: $00; fileName: 'blank.png'),
-    (id: $01; fileName: 'wall00_01.png'),
-    (id: $02; fileName: 'wall00_02.png'),
-    (id: $03; fileName: 'wall00_03.png'),
-    (id: $04; fileName: 'wall00_04.png'),
-    (id: $05; fileName: 'wall00_05.png'),
-    (id: $06; fileName: 'wall00_06.png'),
-    (id: $07; fileName: 'wall00_07.png'),
-    (id: $08; fileName: 'wall00_08.png'),
-    (id: $09; fileName: 'wall00_09.png'),
-    (id: $0a; fileName: 'wall00_0a.png'),
-    (id: $0b; fileName: 'wall00_0b.png'),
-    (id: $0c; fileName: 'wall00_0c.png'),
-    (id: $0d; fileName: 'wall00_0d.png'),
-    (id: $0e; fileName: 'wall00_0e.png'),
-    (id: $0f; fileName: 'wall00_0f.png'),
-    (id: $10; fileName: 'wall00_10.png'),
+    (id: $01 + 0 * STYLES_OFFSET; fileName: 'wall00_01.png'),
+    (id: $02 + 0 * STYLES_OFFSET; fileName: 'wall00_02.png'),
+    (id: $03 + 0 * STYLES_OFFSET; fileName: 'wall00_03.png'),
+    (id: $04 + 0 * STYLES_OFFSET; fileName: 'wall00_04.png'),
+    (id: $05 + 0 * STYLES_OFFSET; fileName: 'wall00_05.png'),
+    (id: $06 + 0 * STYLES_OFFSET; fileName: 'wall00_06.png'),
+    (id: $07 + 0 * STYLES_OFFSET; fileName: 'wall00_07.png'),
+    (id: $08 + 0 * STYLES_OFFSET; fileName: 'wall00_08.png'),
+    (id: $09 + 0 * STYLES_OFFSET; fileName: 'wall00_09.png'),
+    (id: $0a + 0 * STYLES_OFFSET; fileName: 'wall00_0a.png'),
+    (id: $0b + 0 * STYLES_OFFSET; fileName: 'wall00_0b.png'),
+    (id: $0c + 0 * STYLES_OFFSET; fileName: 'wall00_0c.png'),
+    (id: $0d + 0 * STYLES_OFFSET; fileName: 'wall00_0d.png'),
+    (id: $0e + 0 * STYLES_OFFSET; fileName: 'wall00_0e.png'),
+    (id: $0f + 0 * STYLES_OFFSET; fileName: 'wall00_0f.png'),
+    (id: $10 + 0 * STYLES_OFFSET; fileName: 'wall00_10.png'),
     (id: $11; fileName: 'gate_h.png'),
     (id: $12; fileName: 'gate_v.png'),
     (id: $13; fileName: 'treasure.png'),
@@ -122,11 +142,122 @@ const
     (id: $42; fileName: 'demon.png'),
     (id: $43; fileName: 'lobber.png'),
     (id: $44; fileName: 'sorcerer.png'),
-    (id: $45; fileName: 'death.png')
+    (id: $45; fileName: 'death.png'),
+    (id: $01 + 1 * STYLES_OFFSET; fileName: 'wall01_01.png'),
+    (id: $02 + 1 * STYLES_OFFSET; fileName: 'wall01_02.png'),
+    (id: $03 + 1 * STYLES_OFFSET; fileName: 'wall01_03.png'),
+    (id: $04 + 1 * STYLES_OFFSET; fileName: 'wall01_04.png'),
+    (id: $05 + 1 * STYLES_OFFSET; fileName: 'wall01_05.png'),
+    (id: $06 + 1 * STYLES_OFFSET; fileName: 'wall01_06.png'),
+    (id: $07 + 1 * STYLES_OFFSET; fileName: 'wall01_07.png'),
+    (id: $08 + 1 * STYLES_OFFSET; fileName: 'wall01_08.png'),
+    (id: $09 + 1 * STYLES_OFFSET; fileName: 'wall01_09.png'),
+    (id: $0a + 1 * STYLES_OFFSET; fileName: 'wall01_0a.png'),
+    (id: $0b + 1 * STYLES_OFFSET; fileName: 'wall01_0b.png'),
+    (id: $0c + 1 * STYLES_OFFSET; fileName: 'wall01_0c.png'),
+    (id: $0d + 1 * STYLES_OFFSET; fileName: 'wall01_0d.png'),
+    (id: $0e + 1 * STYLES_OFFSET; fileName: 'wall01_0e.png'),
+    (id: $0f + 1 * STYLES_OFFSET; fileName: 'wall01_0f.png'),
+    (id: $10 + 1 * STYLES_OFFSET; fileName: 'wall01_10.png'),
+    (id: $01 + 2 * STYLES_OFFSET; fileName: 'wall02_01.png'),
+    (id: $02 + 2 * STYLES_OFFSET; fileName: 'wall02_02.png'),
+    (id: $03 + 2 * STYLES_OFFSET; fileName: 'wall02_03.png'),
+    (id: $04 + 2 * STYLES_OFFSET; fileName: 'wall02_04.png'),
+    (id: $05 + 2 * STYLES_OFFSET; fileName: 'wall02_05.png'),
+    (id: $06 + 2 * STYLES_OFFSET; fileName: 'wall02_06.png'),
+    (id: $07 + 2 * STYLES_OFFSET; fileName: 'wall02_07.png'),
+    (id: $08 + 2 * STYLES_OFFSET; fileName: 'wall02_08.png'),
+    (id: $09 + 2 * STYLES_OFFSET; fileName: 'wall02_09.png'),
+    (id: $0a + 2 * STYLES_OFFSET; fileName: 'wall02_0a.png'),
+    (id: $0b + 2 * STYLES_OFFSET; fileName: 'wall02_0b.png'),
+    (id: $0c + 2 * STYLES_OFFSET; fileName: 'wall02_0c.png'),
+    (id: $0d + 2 * STYLES_OFFSET; fileName: 'wall02_0d.png'),
+    (id: $0e + 2 * STYLES_OFFSET; fileName: 'wall02_0e.png'),
+    (id: $0f + 2 * STYLES_OFFSET; fileName: 'wall02_0f.png'),
+    (id: $10 + 2 * STYLES_OFFSET; fileName: 'wall02_10.png'),
+    (id: $01 + 3 * STYLES_OFFSET; fileName: 'wall03_01.png'),
+    (id: $02 + 3 * STYLES_OFFSET; fileName: 'wall03_02.png'),
+    (id: $03 + 3 * STYLES_OFFSET; fileName: 'wall03_03.png'),
+    (id: $04 + 3 * STYLES_OFFSET; fileName: 'wall03_04.png'),
+    (id: $05 + 3 * STYLES_OFFSET; fileName: 'wall03_05.png'),
+    (id: $06 + 3 * STYLES_OFFSET; fileName: 'wall03_06.png'),
+    (id: $07 + 3 * STYLES_OFFSET; fileName: 'wall03_07.png'),
+    (id: $08 + 3 * STYLES_OFFSET; fileName: 'wall03_08.png'),
+    (id: $09 + 3 * STYLES_OFFSET; fileName: 'wall03_09.png'),
+    (id: $0a + 3 * STYLES_OFFSET; fileName: 'wall03_0a.png'),
+    (id: $0b + 3 * STYLES_OFFSET; fileName: 'wall03_0b.png'),
+    (id: $0c + 3 * STYLES_OFFSET; fileName: 'wall03_0c.png'),
+    (id: $0d + 3 * STYLES_OFFSET; fileName: 'wall03_0d.png'),
+    (id: $0e + 3 * STYLES_OFFSET; fileName: 'wall03_0e.png'),
+    (id: $0f + 3 * STYLES_OFFSET; fileName: 'wall03_0f.png'),
+    (id: $10 + 3 * STYLES_OFFSET; fileName: 'wall03_10.png'),
+    (id: $01 + 4 * STYLES_OFFSET; fileName: 'wall04_01.png'),
+    (id: $02 + 4 * STYLES_OFFSET; fileName: 'wall04_02.png'),
+    (id: $03 + 4 * STYLES_OFFSET; fileName: 'wall04_03.png'),
+    (id: $04 + 4 * STYLES_OFFSET; fileName: 'wall04_04.png'),
+    (id: $05 + 4 * STYLES_OFFSET; fileName: 'wall04_05.png'),
+    (id: $06 + 4 * STYLES_OFFSET; fileName: 'wall04_06.png'),
+    (id: $07 + 4 * STYLES_OFFSET; fileName: 'wall04_07.png'),
+    (id: $08 + 4 * STYLES_OFFSET; fileName: 'wall04_08.png'),
+    (id: $09 + 4 * STYLES_OFFSET; fileName: 'wall04_09.png'),
+    (id: $0a + 4 * STYLES_OFFSET; fileName: 'wall04_0a.png'),
+    (id: $0b + 4 * STYLES_OFFSET; fileName: 'wall04_0b.png'),
+    (id: $0c + 4 * STYLES_OFFSET; fileName: 'wall04_0c.png'),
+    (id: $0d + 4 * STYLES_OFFSET; fileName: 'wall04_0d.png'),
+    (id: $0e + 4 * STYLES_OFFSET; fileName: 'wall04_0e.png'),
+    (id: $0f + 4 * STYLES_OFFSET; fileName: 'wall04_0f.png'),
+    (id: $10 + 4 * STYLES_OFFSET; fileName: 'wall04_10.png'),
+    (id: $01 + 5 * STYLES_OFFSET; fileName: 'wall05_01.png'),
+    (id: $02 + 5 * STYLES_OFFSET; fileName: 'wall05_02.png'),
+    (id: $03 + 5 * STYLES_OFFSET; fileName: 'wall05_03.png'),
+    (id: $04 + 5 * STYLES_OFFSET; fileName: 'wall05_04.png'),
+    (id: $05 + 5 * STYLES_OFFSET; fileName: 'wall05_05.png'),
+    (id: $06 + 5 * STYLES_OFFSET; fileName: 'wall05_06.png'),
+    (id: $07 + 5 * STYLES_OFFSET; fileName: 'wall05_07.png'),
+    (id: $08 + 5 * STYLES_OFFSET; fileName: 'wall05_08.png'),
+    (id: $09 + 5 * STYLES_OFFSET; fileName: 'wall05_09.png'),
+    (id: $0a + 5 * STYLES_OFFSET; fileName: 'wall05_0a.png'),
+    (id: $0b + 5 * STYLES_OFFSET; fileName: 'wall05_0b.png'),
+    (id: $0c + 5 * STYLES_OFFSET; fileName: 'wall05_0c.png'),
+    (id: $0d + 5 * STYLES_OFFSET; fileName: 'wall05_0d.png'),
+    (id: $0e + 5 * STYLES_OFFSET; fileName: 'wall05_0e.png'),
+    (id: $0f + 5 * STYLES_OFFSET; fileName: 'wall05_0f.png'),
+    (id: $10 + 5 * STYLES_OFFSET; fileName: 'wall05_10.png'),
+    (id: $01 + 6 * STYLES_OFFSET; fileName: 'wall06_01.png'),
+    (id: $02 + 6 * STYLES_OFFSET; fileName: 'wall06_02.png'),
+    (id: $03 + 6 * STYLES_OFFSET; fileName: 'wall06_03.png'),
+    (id: $04 + 6 * STYLES_OFFSET; fileName: 'wall06_04.png'),
+    (id: $05 + 6 * STYLES_OFFSET; fileName: 'wall06_05.png'),
+    (id: $06 + 6 * STYLES_OFFSET; fileName: 'wall06_06.png'),
+    (id: $07 + 6 * STYLES_OFFSET; fileName: 'wall06_07.png'),
+    (id: $08 + 6 * STYLES_OFFSET; fileName: 'wall06_08.png'),
+    (id: $09 + 6 * STYLES_OFFSET; fileName: 'wall06_09.png'),
+    (id: $0a + 6 * STYLES_OFFSET; fileName: 'wall06_0a.png'),
+    (id: $0b + 6 * STYLES_OFFSET; fileName: 'wall06_0b.png'),
+    (id: $0c + 6 * STYLES_OFFSET; fileName: 'wall06_0c.png'),
+    (id: $0d + 6 * STYLES_OFFSET; fileName: 'wall06_0d.png'),
+    (id: $0e + 6 * STYLES_OFFSET; fileName: 'wall06_0e.png'),
+    (id: $0f + 6 * STYLES_OFFSET; fileName: 'wall06_0f.png'),
+    (id: $10 + 6 * STYLES_OFFSET; fileName: 'wall06_10.png'),
+    (id: $01 + 7 * STYLES_OFFSET; fileName: 'wall07_01.png'),
+    (id: $02 + 7 * STYLES_OFFSET; fileName: 'wall07_02.png'),
+    (id: $03 + 7 * STYLES_OFFSET; fileName: 'wall07_03.png'),
+    (id: $04 + 7 * STYLES_OFFSET; fileName: 'wall07_04.png'),
+    (id: $05 + 7 * STYLES_OFFSET; fileName: 'wall07_05.png'),
+    (id: $06 + 7 * STYLES_OFFSET; fileName: 'wall07_06.png'),
+    (id: $07 + 7 * STYLES_OFFSET; fileName: 'wall07_07.png'),
+    (id: $08 + 7 * STYLES_OFFSET; fileName: 'wall07_08.png'),
+    (id: $09 + 7 * STYLES_OFFSET; fileName: 'wall07_09.png'),
+    (id: $0a + 7 * STYLES_OFFSET; fileName: 'wall07_0a.png'),
+    (id: $0b + 7 * STYLES_OFFSET; fileName: 'wall07_0b.png'),
+    (id: $0c + 7 * STYLES_OFFSET; fileName: 'wall07_0c.png'),
+    (id: $0d + 7 * STYLES_OFFSET; fileName: 'wall07_0d.png'),
+    (id: $0e + 7 * STYLES_OFFSET; fileName: 'wall07_0e.png'),
+    (id: $0f + 7 * STYLES_OFFSET; fileName: 'wall07_0f.png'),
+    (id: $10 + 7 * STYLES_OFFSET; fileName: 'wall07_10.png')
     );
 
 var
-  gauntStyle: TGauntStyle;
   ilMap: TImageList;
   ilTools: TImageList;
   resourcesDir: string;
@@ -142,15 +273,22 @@ implementation
 constructor TGauntMaze.Create;
 begin
   inherited Create;
-  FTraceLayer := TList.Create;
+  //FTraceLayer := TList.Create;
+  self.FBuffer := TMemoryStream.Create;
   self.InitVisitedData;
   self.InitMapData;
+  self.FStyle := gauntStyles[0];
 end;
 
 destructor TGauntMaze.Destroy;
 begin
-  FTraceLayer.Free;
+  //FTraceLayer.Free;
+  self.FBuffer.Destroy;
   inherited Destroy;
+end;
+
+function TGauntMaze.getSize: integer;
+begin
 end;
 
 function TGauntMaze.getTraceLayerSize: integer;
@@ -158,7 +296,7 @@ var
   i: integer;
 begin
   Result := 0;
-  if FTraceLayer.Count > 0 then
+ { if FTraceLayer.Count > 0 then
   begin
     for i := 0 to FTraceLayer.Count - 1 do
     begin
@@ -172,7 +310,7 @@ begin
         Result := Result + 2;
       end;
     end;
-  end;
+  end;}
 end;
 
 function TGauntMaze.getItemsLayersize: integer;
@@ -182,7 +320,7 @@ end;
 
 procedure InitData;
 begin
-  gauntStyle := gauntStyles[0];
+
   resourcesDir := ExtractFilePath(ParamStr(0)) + RESOURCES_DIR;
 
 end;
@@ -232,12 +370,39 @@ end;
 
 procedure TGauntMaze.InitMapData;
 begin
-  self.InitMap(self.FMapData);
+  self.InitMap(self.MapData);
+end;
+
+procedure TGauntMaze.InitItemData;
+begin
+  self.InitMap(self.ItemData);
 end;
 
 procedure TGauntMaze.InitVisitedData;
 begin
   self.InitMap(self.FVisitedData);
+end;
+
+procedure TGauntMaze.ToFileStream(fs: TFileStream);
+var
+  i: integer;
+begin
+  try
+    //guarantee the TMemoryStream is at pos 0
+    self.FBuffer.Seek(0, soBeginning);
+
+    //set the target file to append data
+    fs.Seek(0, TSeekOrigin.soEnd);
+    for i := 0 to fs.Size - 1 do
+    begin
+      fs.WriteByte(FBuffer.ReadByte);
+    end;
+
+  except
+    on E: Exception do DebugLn('Error saving maze ' + self.Name +
+        ' to file ' + fs.FileName + ': ' + E.Message);
+  end;
+
 end;
 
 end.

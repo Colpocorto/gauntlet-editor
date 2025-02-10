@@ -6,50 +6,72 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
-  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, DividerBevel, Types,
-  uData, ActnList, ComCtrls, LResources, StdCtrls, LCLIntf, LCLtype, cyNavPanel,
-  cySplitter, cyTabControl, BCExpandPanels, BCGameGrid, attabs, ECTabCtrl,
-  uETilePanel;
+  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, CheckBoxThemed, Types,
+  uData, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns, Buttons,
+  StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel, cyCheckbox,
+  BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRASpeedButton,
+  BGRACustomDrawn, BGRAGradientScanner, BGRABitmapTypes;
 
 type
 
   { TfMain }
 
   TfMain = class(TForm)
+    aStyle4: TAction;
+    aStyle5: TAction;
+    aStyle6: TAction;
+    aStyle7: TAction;
+    aStyle8: TAction;
+    aStyle3: TAction;
+    aStyle2: TAction;
+    aStyle1: TAction;
     alMain: TActionList;
     appProp: TApplicationProperties;
+    btnExit: TSpeedButton;
+    btnSave: TSpeedButton;
+    btnStyle2: TSpeedButton;
+    btnStyle3: TSpeedButton;
+    btnStyle4: TSpeedButton;
+    btnStyle5: TSpeedButton;
+    btnStyle6: TSpeedButton;
+    btnStyle7: TSpeedButton;
+    btnStyle8: TSpeedButton;
+    bvSpacer1: TcyBevel;
+    bvSpacer2: TcyBevel;
+    cypanelMain: TCyPanel;
+    cyFlyingContainer1: TcyFlyingContainer;
+    aExit: TFileExit;
+    aSaveMaze: TFileSaveAs;
+    ilStyles: TImageList;
+    panStyles: TPanel;
+    btnStyle1: TSpeedButton;
+    plCheckBox1: TplCheckBox;
     tabsMain: TATTabs;
     BCEPanelsOpt: TBCExpandPanels;
     dgMap: TDrawGrid;
     hSplitter: TPairSplitter;
     hSplitterLeft: TPairSplitterSide;
     hSplitterRight: TPairSplitterSide;
-    ImageList1: TImageList;
+    ilMenu: TImageList;
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
     timerMain: TTimer;
-    procedure appPropActionExecute(AAction: TBasicAction; var Handled: boolean);
-    procedure BCEPanelsOptArrangePanels(Sender: TObject);
-    procedure Button2Click(Sender: TObject);
     procedure dgMapClick(Sender: TObject);
     procedure dgMapDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
     procedure dgMapMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
+    procedure aStyleExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
-    procedure hSplitterChangeBounds(Sender: TObject);
-    procedure panOptionsClick(Sender: TObject);
-    procedure tabsMainClick(Sender: TObject);
     procedure tabsMainTabChanged(Sender: TObject);
     procedure tabsMainTabPlusClick(Sender: TObject);
     procedure timerMainTimer(Sender: TObject);
     procedure CreateOptionPanels(Container: TControl);
-    procedure CreateInfoCtrls(Container: TControl);
+    procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
     function AddNewMaze: integer;
   private
 
-    index_repaint_needed: boolean;
   public
 
   end;
@@ -71,7 +93,7 @@ implementation
 procedure TfMain.FormCreate(Sender: TObject);
 begin
 
-  //self.index_repaint_needed := True;
+  self.Caption := Application.Title;
 
   //Load graphics
   uData.loadGraphics(self, dgMap.DefaultColWidth);
@@ -85,7 +107,7 @@ begin
   CreateOptionPanels(self.hSplitterRight);
 
   //Panel maze info
-  CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
+  //CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
 
   //Adjust dimensions
   dgMap.Width := dgMap.ColCount * dgMap.DefaultColWidth;
@@ -94,7 +116,8 @@ begin
   hSplitter.Position := dgMap.Width;
 
   //start timer for graphics refreshing
-  timerMain.Enabled := True;
+  timerMain.Interval := 33;
+  //timerMain.Enabled := True;
 
 end;
 
@@ -106,13 +129,10 @@ begin
   tab1.TabCaption := 'New Maze ' + IntToStr(tabsMain.TabCount + 1);
   tab1.TabObject := TGauntMaze.Create;
   TGauntMaze(tab1.TabObject).Name := tab1.TabCaption;
-  tabsMain.AddTab(0, tab1);
-  tabsMain.ShowTab(0);
-end;
-
-procedure TfMain.CreateInfoCtrls(Container: TControl);
-begin
-
+  tabsMain.AddTab(tabsMain.TabCount, tab1);
+  tabsMain.ShowTab(tabsMain.TabCount - 1);
+  tabsMain.TabIndex := tabsMain.TabCount - 1;
+  Result := tabsMain.TabCount;
 end;
 
 procedure TfMain.CreateOptionPanels(Container: TControl);
@@ -145,24 +165,27 @@ begin
   // hSplitterLeft.Width:=self.ClientWidth-hSplitterLeft.Left;
 end;
 
-procedure TfMain.hSplitterChangeBounds(Sender: TObject);
-begin
-
-end;
-
-procedure TfMain.panOptionsClick(Sender: TObject);
-begin
-
-end;
-
-procedure TfMain.tabsMainClick(Sender: TObject);
-begin
-
-end;
-
 procedure TfMain.tabsMainTabChanged(Sender: TObject);
 begin
 
+  SelectButtonByStyle(TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).Style.id);
+
+  dgMap.Repaint;
+end;
+
+procedure TfMain.SelectButtonByStyle(styleId: integer);
+var
+  i: integer;
+begin
+  for i := 0 to panStyles.ControlCount - 1 do
+  begin
+    if TSpeedButton(panStyles.Controls[i]).ImageIndex = styleId then
+    begin
+      TSpeedButton(panStyles.Controls[i]).Down := True;
+      break;
+    end;
+  end;
 end;
 
 procedure TfMain.tabsMainTabPlusClick(Sender: TObject);
@@ -179,6 +202,7 @@ procedure TfMain.dgMapDrawCell(Sender: TObject; aCol, aRow: integer;
   aRect: TRect; aState: TGridDrawState);
 var
   MapCol, MapRow: integer;
+  cell: integer;
 begin
 
   //check if cell belongs to frame
@@ -208,16 +232,25 @@ begin
       //normalize col/row first to match matrix indices
       MapCol := aCol - 1;
       MapRow := aRow - 1;
-      case TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[MapCol,
-          MapRow] of
+      cell := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData
+        [MapCol, MapRow];
+      case cell of
         0:
         begin
           dgMap.Canvas.Brush.Color := dgMap.Color;
           dgMap.Canvas.FillRect(aRect);      //delete block
         end;
-        1..31:
+        1..$45:
+        begin
+          if cell <= $10 then
+          begin
+            //apply style
+            cell := cell + STYLES_OFFSET * TGauntMaze(
+              tabsMain.GetTabData(tabsMain.tabIndex).TabObject).Style.id;
+          end;
           ilMap.Draw(dgMap.Canvas,
-            aRect.TopLeft.X, aRect.TopLeft.Y, 5, True);
+            aRect.TopLeft.X, aRect.TopLeft.Y, patternIndexMap[cell], True);
+        end;
 
       end;
 
@@ -229,41 +262,34 @@ procedure TfMain.dgMapMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integ
 begin
   if ssLeft in Shift then
   begin
-    if ssAlt in Shift then
+    if ssCtrl in Shift then
     begin
       WriteCell(dgMap, 0);
     end
     else
     begin
-      WriteCell(dgMap, 1);
+      WriteCell(dgMap, $0a);
     end;
   end;
 end;
 
-procedure TfMain.appPropActionExecute(AAction: TBasicAction; var Handled: boolean);
+procedure TfMain.aStyleExecute(Sender: TObject);
 begin
-
-end;
-
-procedure TfMain.BCEPanelsOptArrangePanels(Sender: TObject);
-begin
-
-end;
-
-procedure TfMain.Button2Click(Sender: TObject);
-begin
+  TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Style :=
+    gauntStyles[TAction(Sender).ImageIndex];
+  dgMap.Repaint;
 
 end;
 
 procedure TfMain.dgMapClick(Sender: TObject);
 begin
-  if ssAlt in GetShiftState then
+  if ssCtrl in GetShiftState then
   begin
     WriteCell(dgMap, 0);
   end
   else
   begin
-    WriteCell(dgMap, 1);
+    WriteCell(dgMap, $0a);
   end;
   dgMap.Repaint;
 end;

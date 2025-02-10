@@ -120,7 +120,7 @@ Offset:
             W   =   horizontal wrap maze (no wall)
             V   =   vertical wrap maze (wall)
             P   =   find the potion
-            S   =   shot can stunt other players
+            S   =   shot can stun other players
             H   =   shot can hurt other players
   
 +02   LxCCCxxx    => 
@@ -190,17 +190,17 @@ Available commands for wall drawing:
 
 Possible commands for block definition:
 
-* Advance MAZE_BUF cursor. MSB + number of positions to advance (lineary).
+* Advance MAZE_BUF cursor. MSB + 1 + number of positions to advance (lineary). (the counter is increased by one to adjust the range to 1-128)
 * Iter      #nn    repeat the former object #nn times (N<=#12>).
 * Object.   #NN    object number (from list [PATTERN LIST], N>#12). Cursor is advanced to the next position.   
-* Charpos.  #3F    character position? CHECK
+* Charpos.  #3F    character position? CHECK   00111111
 * Enemy.    #40+   enemy. Bits 543 are the number of enemy:
                 #40 000 Ghost * 3
                 #48 001 Grunt * 3
                 #50 010 Demon * 3
-                    011 Lobber * 3
-                    100 Sorcerer * 3
-                    101 Death
+                #58 011 Lobber * 3
+                #60 100 Sorcerer * 3
+                #68 101 Death
             
             bits 10 might be enemy's power CHECK
 
@@ -299,9 +299,10 @@ NOTE: blocks from 01 to 10 are automatically placed by the game when "drawing" w
 2F  trap                        AF
 30  transporter                 B0
 31  spoiled cider               B1
-32  many keys       +            B2
+32  many keys                   B2
 33  destructible wall level 3   B3
 34  destructible wall level 2   B4
 35  destructible wall level 1   B5
 36  EXIT                        B6
-
+37  EXIT TO 4                   B7
+38  EXIT TO 8                   B8

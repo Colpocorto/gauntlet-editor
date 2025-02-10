@@ -10,7 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, uecontrols, runtimetypeinfocontrols, lazcontrols, LazLogger, uMain,
+  Forms, runtimetypeinfocontrols, LazLogger, lazcontrols, uMain,
   uData
   { you can add units after this };
 
@@ -23,6 +23,7 @@ begin
   Application.MainFormOnTaskbar:=True;
   {$POP}
   Application.Initialize;
+  Application.Title:='Gauntlet Editor v0.1';
   uData.InitData;
   Application.CreateForm(TfMain, fMain);
   Application.Run;
