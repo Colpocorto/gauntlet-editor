@@ -30,7 +30,7 @@ type
     steps: smallint;
   end;
 
-  TGauntMaze = class
+  TGauntMaze = class (TPersistent)
   private
     FSize: integer;  //0-511
     FHorzWrap: boolean;
@@ -56,14 +56,18 @@ type
     function getTraceLayerSize(): integer;
     function getItemsLayersize(): integer;
     property Name: string read FName write FName;
-    property HorzWrap: boolean read FHorzWrap write FHorzWrap;
-    property VertWrap: boolean read FVertWrap write FVertWrap;
+    //property HorzWrap: boolean read FHorzWrap write FHorzWrap;
+    //property VertWrap: boolean read FVertWrap write FVertWrap;
     property FindThePotion: boolean read FFindThePotion write FFindThePotion;
     property StunPlayers: boolean read FStunPlayers write FStunPlayers;
     property HurtPlayers: boolean read FHurtPlayers write FHurtPlayers;
     property Style: TGauntStyle read FStyle write FStyle;
 
     function getSize: integer;
+    procedure SetHorzWrap(w: boolean);
+    procedure SetVertWrap(w: boolean);
+    function GetHorzWrap(): boolean;
+    function GetVertWrap(): boolean;
     procedure InitMapData;
     procedure InitItemData;
     procedure InitVisitedData;
@@ -129,6 +133,17 @@ const
     (id: $21; fileName: 'gen_ghost_2.png'),
     (id: $22; fileName: 'gen_ghost_3.png'),
     (id: $23; fileName: 'gen_grunt_1.png'),
+    (id: $24; fileName: 'gen_grunt_1.png'),
+    (id: $25; fileName: 'gen_grunt_1.png'),
+    (id: $26; fileName: 'gen_grunt_1.png'),
+    (id: $27; fileName: 'gen_grunt_1.png'),
+    (id: $28; fileName: 'gen_grunt_1.png'),
+    (id: $29; fileName: 'gen_grunt_1.png'),
+    (id: $2a; fileName: 'gen_grunt_1.png'),
+    (id: $2c; fileName: 'gen_grunt_1.png'),
+    (id: $2d; fileName: 'gen_grunt_1.png'),
+    (id: $2d; fileName: 'gen_grunt_1.png'),
+    (id: $2e; fileName: 'gen_grunt_1.png'),
     (id: $2f; fileName: 'trap.png'),
     (id: $30; fileName: 'transporter.png'),
     (id: $31; fileName: 'bad_cider.png'),
@@ -278,6 +293,10 @@ begin
   self.InitVisitedData;
   self.InitMapData;
   self.FStyle := gauntStyles[0];
+  self.FHorzWrap := False;
+  self.FVertWrap := False;
+  self.FStunPlayers := False;
+  self.FHurtPlayers := False;
 end;
 
 destructor TGauntMaze.Destroy;
@@ -285,6 +304,49 @@ begin
   //FTraceLayer.Free;
   self.FBuffer.Destroy;
   inherited Destroy;
+end;
+
+procedure TGauntMaze.SetHorzWrap(w: boolean);
+var
+  i: integer;
+  f: integer;
+begin
+  if w then f := 0   //no wall
+  else
+    f := $05;      //vertical wall
+
+  for i := 0 to 31 do
+  begin
+    self.MapData[0, i] := f;
+  end;
+
+  if not w then
+  begin
+    //add also the corner
+    self.MapData[0, 0] := $06;
+  end
+  else
+  begin
+    //add regular horz block
+    self.MapData[0, 0] := $0a;
+  end;
+  self.FHorzWrap := w;
+
+end;
+
+procedure TGauntMaze.SetVertWrap(w: boolean);
+begin
+  self.FVertWrap := w;
+end;
+
+function TGauntMaze.GetHorzWrap(): boolean;
+begin
+  Result := self.FHorzWrap;
+end;
+
+function TGauntMaze.GetVertWrap(): boolean;
+begin
+  Result := self.FVertWrap;
 end;
 
 function TGauntMaze.getSize: integer;
@@ -369,8 +431,24 @@ begin
 end;
 
 procedure TGauntMaze.InitMapData;
+var
+  i: integer;
 begin
   self.InitMap(self.MapData);
+  //add top border of the dungeon
+  for i := 0 to 31 do
+    self.MapData[i, 0] := $0a;
+
+  //add left border if not wrapping H
+  if not self.FHorzWrap then
+  begin
+    for i := 0 to 31 do
+    begin
+      self.MapData[0, i] := $05;
+    end;
+    //corner
+    self.MapData[0, 0] := $06;
+  end;
 end;
 
 procedure TGauntMaze.InitItemData;

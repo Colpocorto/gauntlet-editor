@@ -119,7 +119,7 @@ Offset:
 +01   WVxxxPSH
             W   =   horizontal wrap maze (no wall)
             V   =   vertical wrap maze (wall)
-            P   =   find the potion
+            P   =   remove all exits but one?
             S   =   shot can stun other players
             H   =   shot can hurt other players
   
@@ -136,7 +136,7 @@ Offset:
 
             L = MSB of size stored at +00
 
-+03         WALL DEFINITION BLOCK SIZE (max 255)
++03         WALL DE ITION BLOCK SIZE (max 255)
 +04         WALL DEFINITION DATA
 +(size of previous block)
             OBJECT DEFINITION BLOCK DATA

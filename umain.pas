@@ -10,13 +10,15 @@ uses
   uData, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns, Buttons,
   StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel, cyCheckbox,
   BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRASpeedButton,
-  BGRACustomDrawn, BGRAGradientScanner, BGRABitmapTypes;
+  BGRACustomDrawn, BCComboBox, BGRAThemeCheckBox, BGRAGradientScanner,
+  BGRABitmapTypes;
 
 type
 
   { TfMain }
 
   TfMain = class(TForm)
+    aGoEditName: TAction;
     aStyle4: TAction;
     aStyle5: TAction;
     aStyle6: TAction;
@@ -27,6 +29,8 @@ type
     aStyle1: TAction;
     alMain: TActionList;
     appProp: TApplicationProperties;
+    bvSpacer3: TcyBevel;
+    cbDamage: TBCComboBox;
     btnExit: TSpeedButton;
     btnSave: TSpeedButton;
     btnStyle2: TSpeedButton;
@@ -38,14 +42,17 @@ type
     btnStyle8: TSpeedButton;
     bvSpacer1: TcyBevel;
     bvSpacer2: TcyBevel;
+    cbWrapH: TplCheckBox;
     cypanelMain: TCyPanel;
     cyFlyingContainer1: TcyFlyingContainer;
     aExit: TFileExit;
     aSaveMaze: TFileSaveAs;
     ilStyles: TImageList;
+    leName: TLabeledEdit;
     panStyles: TPanel;
     btnStyle1: TSpeedButton;
-    plCheckBox1: TplCheckBox;
+    cbWrapV: TplCheckBox;
+    btEditName: TSpeedButton;
     tabsMain: TATTabs;
     BCEPanelsOpt: TBCExpandPanels;
     dgMap: TDrawGrid;
@@ -56,6 +63,10 @@ type
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
     timerMain: TTimer;
+    procedure aGoEditNameExecute(Sender: TObject);
+    procedure cbDamageChange(Sender: TObject);
+    procedure cbWrapHClick(Sender: TObject);
+    procedure cbWrapVClick(Sender: TObject);
     procedure dgMapClick(Sender: TObject);
     procedure dgMapDrawCell(Sender: TObject; aCol, aRow: integer;
       aRect: TRect; aState: TGridDrawState);
@@ -63,12 +74,16 @@ type
     procedure aStyleExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure leNameDblClick(Sender: TObject);
+    procedure leNameExit(Sender: TObject);
+    procedure leNameKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure tabsMainTabChanged(Sender: TObject);
     procedure tabsMainTabPlusClick(Sender: TObject);
     procedure timerMainTimer(Sender: TObject);
     procedure CreateOptionPanels(Container: TControl);
     procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
+    procedure NameEdit;
     function AddNewMaze: integer;
   private
 
@@ -113,7 +128,7 @@ begin
   dgMap.Width := dgMap.ColCount * dgMap.DefaultColWidth;
   dgMap.Height := dgMap.RowCount * dgMap.DefaultRowHeight;
   self.Height := 16 + dgMap.Height;
-  hSplitter.Position := dgMap.Width;
+  hSplitter.Position := dgMap.Width + 32;
 
   //start timer for graphics refreshing
   timerMain.Interval := 33;
@@ -165,11 +180,72 @@ begin
   // hSplitterLeft.Width:=self.ClientWidth-hSplitterLeft.Left;
 end;
 
+procedure TfMain.leNameDblClick(Sender: TObject);
+begin
+  aGoEditName.Execute;
+end;
+
+procedure TfMain.NameEdit;
+begin
+  if trim(leName.Text) = '' then
+    ShowMessage('Please, enter a valid name')
+  else
+  begin
+    leName.Color := $2f2f2f;
+    leName.ReadOnly := True;
+    //update object property
+    TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name :=
+      leName.Text;
+    tabsMain.GetTabData(tabsMain.TabIndex).TabCaption := leName.Text;
+    leName.SelLength := 0;
+  end;
+end;
+
+procedure TfMain.leNameExit(Sender: TObject);
+begin
+  NameEdit;
+end;
+
+procedure TfMain.leNameKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    NameEdit;
+  end;
+end;
+
 procedure TfMain.tabsMainTabChanged(Sender: TObject);
 begin
-
+  //sync style button
   SelectButtonByStyle(TGauntMaze(tabsMain.GetTabData(
     TATTabs(Sender).TabIndex).TabObject).Style.id);
+
+  //sync dungeon flags
+  cbWrapV.Checked := TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).GetVertWrap();
+  cbWrapH.Checked := TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).GetHorzWrap();
+
+  //sync damage others mode
+  if (TGauntMaze(tabsMain.GetTabData(TATTabs(Sender).TabIndex).TabObject).HurtPlayers
+    =
+    False) and (TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).StunPlayers = False) then
+  begin
+    cbDamage.ItemIndex := 0;
+  end
+  else
+  if TGauntMaze(tabsMain.GetTabData(TATTabs(Sender).TabIndex).TabObject).HurtPlayers =
+    True then
+  begin
+    cbDamage.ItemIndex := 1;
+  end
+  else
+    cbDamage.ItemIndex := 2;
+
+  //sync maze name
+  leName.Text := TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).Name;
 
   dgMap.Repaint;
 end;
@@ -294,6 +370,46 @@ begin
   dgMap.Repaint;
 end;
 
+procedure TfMain.cbWrapVClick(Sender: TObject);
+begin
+  TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetVertWrap(
+    cbWrapV.Checked);
+end;
+
+procedure TfMain.cbWrapHClick(Sender: TObject);
+begin
+  TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetHorzWrap(
+    cbWrapH.Checked);
+  dgMap.Repaint;
+end;
+
+procedure TfMain.cbDamageChange(Sender: TObject);
+begin
+  case TBCComboBox(Sender).ItemIndex of
+    0:
+    begin
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).HurtPlayers := False;
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).StunPlayers := False;
+    end;
+    1:
+    begin
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).HurtPlayers := True;
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).StunPlayers := False;
+    end;
+    2:
+    begin
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).HurtPlayers := False;
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).StunPlayers := True;
+    end;
+  end;
+end;
+
+procedure TfMain.aGoEditNameExecute(Sender: TObject);
+begin
+  self.leName.ReadOnly := False;
+  self.leName.Color := $5f5f5f;
+end;
+
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 var
@@ -310,11 +426,17 @@ end;
 procedure TfMain.WriteCell(grid: TCustomGrid; index: integer);
 var
   Col, Row: integer;
+  minCol: integer = 1;
 begin
   // Get the cell coordinates from the mouse click
   grid.MouseToCell(grid.ScreenToClient(Mouse.CursorPos).X,
     grid.ScreenToClient(Mouse.CursorPos).Y, Col, Row);
-  if (Col > 0) and (Col < 33) and (Row > 0) and (Row < 33) then
+  if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).GetHorzWrap() then
+    minCol := 0
+  else
+    minCol := 1;
+
+  if (Col > minCol) and (Col < 33) and (Row > 1) and (Row < 33) then
   begin
     //update map matrix
     TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
