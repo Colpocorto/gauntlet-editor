@@ -18,6 +18,7 @@ type
   { TfMain }
 
   TfMain = class(TForm)
+    aSaveExport: TAction;
     aGoEditName: TAction;
     aStyle4: TAction;
     aStyle5: TAction;
@@ -29,6 +30,7 @@ type
     aStyle1: TAction;
     alMain: TActionList;
     appProp: TApplicationProperties;
+    btnStyle1: TSpeedButton;
     bvSpacer3: TcyBevel;
     cbDamage: TBCComboBox;
     btnExit: TSpeedButton;
@@ -50,7 +52,6 @@ type
     ilStyles: TImageList;
     leName: TLabeledEdit;
     panStyles: TPanel;
-    btnStyle1: TSpeedButton;
     cbWrapV: TplCheckBox;
     btEditName: TSpeedButton;
     tabsMain: TATTabs;
@@ -80,13 +81,16 @@ type
     procedure tabsMainTabChanged(Sender: TObject);
     procedure tabsMainTabPlusClick(Sender: TObject);
     procedure timerMainTimer(Sender: TObject);
-    procedure CreateOptionPanels(Container: TControl);
+    procedure CreateOptionPanels(AContainer: TWinControl);
     procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
-    procedure NameEdit;
+
     function AddNewMaze: integer;
   private
-
+    procedure NameEdit;
+    procedure CreateInfoCtrls(AParent: TCustomControl);
+    function ExpandPanelFactory(AContainer: TWinControl; AName: string;
+      ACaption: string): TBCExpandPAnel;
   public
 
   end;
@@ -119,10 +123,10 @@ begin
   AddNewMaze;
 
   //Create expandable panels
-  CreateOptionPanels(self.hSplitterRight);
+  CreateOptionPanels(self.scrollOptions);
 
   //Panel maze info
-  //CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
+  CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
 
   //Adjust dimensions
   dgMap.Width := dgMap.ColCount * dgMap.DefaultColWidth;
@@ -150,22 +154,18 @@ begin
   Result := tabsMain.TabCount;
 end;
 
-procedure TfMain.CreateOptionPanels(Container: TControl);
+procedure TfMain.CreateOptionPanels(AContainer: TWinControl);
 var
   tempObj: TBCExpandPanel;
 begin
   //create maze info panel
-  tempObj := TBCExpandPanel.Create(Container);
-  tempObj.Name := 'expMazeInfo';
-  tempObj.Visible := True;
+  tempObj := ExpandPanelFactory(AContainer, 'expMazeInfo', 'Info panel');
   BCEPanelsOpt.AddPanel(tempObj);
 
-  tempObj := TBCExpandPanel.Create(Container);
-  tempObj.Name := 'expMazeStyle';
+  tempObj := ExpandPanelFactory(AContainer, 'expTools', 'Edition tools');
   BCEPanelsOpt.AddPanel(tempObj);
 
-  tempObj := TBCExpandPanel.Create(Container);
-  tempObj.Name := 'expTools';
+  tempObj := ExpandPanelFactory(AContainer, 'expObjects', 'Objects');
   BCEPanelsOpt.AddPanel(tempObj);
 
   BCEPanelsOpt.ArrangePanels;
@@ -410,6 +410,7 @@ begin
   self.leName.Color := $5f5f5f;
 end;
 
+
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 var
@@ -444,6 +445,87 @@ begin
 
   end;
 
+end;
+
+procedure TfMain.CreateInfoCtrls(AParent: TCustomControl);
+var
+  i: integer;
+  btn: TSpeedButton;
+begin
+  for i := 0 to 19 do
+  begin
+    btn := TSpeedButton.Create(AParent);
+    btn.Align:=alNone;
+    btn.Caption:='TST';
+    btn.AutoSize:=false;
+    btn.Parent := AParent;
+    btn.Visible := True;
+    btn.Enabled := True;
+    btn.Height := 50;
+    btn.Width := 50;
+    //btn.Top := TBCExpandPanel(AParent).Button.Height;
+    //   AParent.InsertControl(btn);
+
+  end;
+end;
+
+function TfMain.ExpandPanelFactory(AContainer: TWinControl; AName: string;
+  ACaption: string): TBCExpandPAnel;
+var
+  tmppic: TPicture;
+begin
+  tmppic := TPicture.Create;
+
+  Result := TBCExpandPanel.Create(AContainer);
+  with Result do
+  begin
+    Align := alCustom;
+    Anchors := [akTop, akLeft, akRight];
+    Animated := True;
+    AnimationSpeed := 60;
+    Result.BevelWidth:=16;
+    BevelInner := bvSpace;
+    BevelOuter := bvNone;
+    Button.Caption := ACaption;
+    Button.Color := $005F5F5F;
+    Button.ColorExpanded := $005F5F5F;
+    Button.ColorHighlight := $005F5F5F;
+    Button.ColorShadow := $005F5F5F;
+    Button.Flat := True;
+    Button.Font.Color := $e0e0e0;
+    Button.Font.Quality := fqCleartypeNatural;
+    try
+      tmppic.LoadFromFile(resourcesDir + 'exp-arrow-right.png');
+      Button.GlyphCollapsed := tmppic.Bitmap;
+      tmppic.LoadFromFile(resourcesDir + 'exp-arrow-down.png');
+      Button.GlyphExpanded := tmppic.Bitmap;
+    except
+      on E: Exception do GauntDebugLn('Error loading ExpandPanel glyphs: ' + E.Message);
+    end;
+    Button.GlyphLayout := glLeft;
+    Button.Height := 32;
+    Button.Left := 0;
+    Button.Style := bbsTab;
+    Button.TabWidth := -102;
+    Button.TextLayout := BCEXPANDPANELS.TTextLayout.tlCenter;
+    ButtonPosition := akTop;
+    ButtonSize := 32;
+    Name := AName;
+    Caption := '';
+    ChildSizing.HorizontalSpacing := 16;
+    ChildSizing.Layout := cclLeftToRightThenTopToBottom;
+    ChildSizing.VerticalSpacing := 16;
+    CollapseKind := akTop;
+    Color := $1f1f1f;
+    Height := 300;
+    ParentBackground := False;
+    Parent := AContainer;
+    Rounding.RoundX := 0;
+    Rounding.RoundY := 0;
+    Visible := True;
+    Width := AContainer.ClientWidth;
+
+  end;
 end;
 
 function GetShiftState(): TShiftState;

@@ -8,6 +8,7 @@ object fMain: TfMain
   ClientWidth = 1200
   Color = 3881787
   Font.Color = 15263976
+  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
   OnResize = FormResize
   object hSplitter: TPairSplitter
@@ -146,7 +147,7 @@ object fMain: TfMain
     Degrade.SpeedPercent = 100
     Degrade.ToColor = 3092271
     object bvSpacer1: TcyBevel
-      Left = 127
+      Left = 151
       Height = 52
       Top = 8
       Width = 3
@@ -160,7 +161,7 @@ object fMain: TfMain
         end>
     end
     object panStyles: TPanel
-      Left = 136
+      Left = 160
       Height = 61
       Top = 1
       Width = 420
@@ -173,20 +174,6 @@ object fMain: TfMain
       ParentBackground = False
       ParentColor = False
       TabOrder = 0
-      object btnStyle1: TSpeedButton
-        Left = 0
-        Height = 61
-        Top = 0
-        Width = 56
-        Action = aStyle1
-        Flat = True
-        Font.Color = 15263976
-        GroupIndex = 1
-        Images = ilStyles
-        ImageIndex = 0
-        Layout = blGlyphTop
-        ParentFont = False
-      end
       object btnStyle2: TSpeedButton
         Left = 52
         Height = 61
@@ -285,6 +272,20 @@ object fMain: TfMain
         Layout = blGlyphTop
         ParentFont = False
       end
+      object btnStyle1: TSpeedButton
+        Left = 0
+        Height = 61
+        Top = 0
+        Width = 56
+        Action = aStyle1
+        Flat = True
+        Font.Color = 15263976
+        GroupIndex = 1
+        Images = ilStyles
+        ImageIndex = 0
+        Layout = blGlyphTop
+        ParentFont = False
+      end
     end
     object btnExit: TSpeedButton
       Left = 8
@@ -302,11 +303,11 @@ object fMain: TfMain
       ParentFont = False
     end
     object btnSave: TSpeedButton
-      Left = 58
+      Left = 56
       Height = 61
       Top = 4
-      Width = 56
-      Action = aSaveMaze
+      Width = 73
+      Action = aSaveExport
       Color = clBlue
       Flat = True
       Font.Color = 15263976
@@ -317,7 +318,7 @@ object fMain: TfMain
       ParentFont = False
     end
     object bvSpacer2: TcyBevel
-      Left = 560
+      Left = 596
       Height = 52
       Top = 8
       Width = 3
@@ -331,7 +332,7 @@ object fMain: TfMain
         end>
     end
     object cbWrapV: TplCheckBox
-      Left = 576
+      Left = 619
       Height = 17
       Top = 8
       Width = 121
@@ -346,7 +347,7 @@ object fMain: TfMain
       OnClick = cbWrapVClick
     end
     object cbWrapH: TplCheckBox
-      Left = 576
+      Left = 619
       Height = 17
       Top = 34
       Width = 121
@@ -361,7 +362,7 @@ object fMain: TfMain
       OnClick = cbWrapHClick
     end
     object cbDamage: TBCComboBox
-      Left = 706
+      Left = 749
       Height = 17
       Top = 10
       Width = 150
@@ -458,7 +459,7 @@ object fMain: TfMain
       TabOrder = 3
     end
     object bvSpacer3: TcyBevel
-      Left = 890
+      Left = 942
       Height = 52
       Top = 8
       Width = 3
@@ -472,7 +473,7 @@ object fMain: TfMain
         end>
     end
     object leName: TLabeledEdit
-      Left = 912
+      Left = 975
       Height = 21
       Top = 35
       Width = 120
@@ -500,7 +501,7 @@ object fMain: TfMain
       OnKeyDown = leNameKeyDown
     end
     object btEditName: TSpeedButton
-      Left = 1033
+      Left = 1094
       Height = 32
       Top = 23
       Width = 32
@@ -581,6 +582,11 @@ object fMain: TfMain
     object aGoEditName: TAction
       ImageIndex = 2
       OnExecute = aGoEditNameExecute
+    end
+    object aSaveExport: TAction
+      Category = 'File'
+      Caption = 'Save/&Export ...'
+      ImageIndex = 1
     end
   end
   object timerMain: TTimer

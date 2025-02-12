@@ -11,6 +11,8 @@
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
+        <TextName Value="MSXWiki.Gauntlet.Editor"/>
+        <TextDesc Value="Editor to create extra levels for the game Gauntlet (MSX version)"/>
       </XPManifest>
       <Icon Value="0"/>
     </General>

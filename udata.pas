@@ -18,7 +18,7 @@ type
     Name: string;
     desc: string;
   end;
-  TCustomGauntTraceCmd = class abstract(TObject);
+  TCustomGauntTraceCmd = class abstract (TObject);
   //TCustomGauntItemCmd = class abstract(TObject);
   TGauntTraceOrigin = class(TCustomGauntTraceCmd)
     col, row: smallint;
@@ -30,7 +30,7 @@ type
     steps: smallint;
   end;
 
-  TGauntMaze = class (TPersistent)
+  TGauntMaze = class(TPersistent)
   private
     FSize: integer;  //0-511
     FHorzWrap: boolean;
@@ -45,6 +45,7 @@ type
     FVisitedData: TGauntMap;
     FStyle: TGauntStyle;
     FBuffer: TMemoryStream;
+    Fid: string;
     procedure InitMap(var map: TGauntMap);
   public
     MapData: TGauntMap;
@@ -62,6 +63,7 @@ type
     property StunPlayers: boolean read FStunPlayers write FStunPlayers;
     property HurtPlayers: boolean read FHurtPlayers write FHurtPlayers;
     property Style: TGauntStyle read FStyle write FStyle;
+    property id: string read Fid write Fid;
 
     function getSize: integer;
     procedure SetHorzWrap(w: boolean);
@@ -282,6 +284,8 @@ var
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
+procedure GauntDebugLn(ATextLine: string);
+function GetUUID: string;
 
 implementation
 
@@ -297,6 +301,7 @@ begin
   self.FVertWrap := False;
   self.FStunPlayers := False;
   self.FHurtPlayers := False;
+  self.Fid := GetUUID();
 end;
 
 destructor TGauntMaze.Destroy;
@@ -477,10 +482,27 @@ begin
     end;
 
   except
-    on E: Exception do DebugLn('Error saving maze ' + self.Name +
+    on E: Exception do GauntDebugLn('Error saving maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);
   end;
 
+end;
+
+procedure GauntDebugLn(ATextLine: string);
+begin
+  DebugLn(ATextLine);
+end;
+
+function GetUUID: string;
+var
+  GUID: TGUID;
+begin
+  if CreateGUID(GUID) = 0 then
+  begin
+    Result := GUIDToString(GUID);
+  end
+  else
+    Result := '';
 end;
 
 end.

@@ -23,7 +23,7 @@ begin
   Application.MainFormOnTaskbar:=True;
   {$POP}
   Application.Initialize;
-  Application.Title:='Gauntlet Editor v0.1';
+  Application.Title:='Gauntlet Editor v1.0';
   uData.InitData;
   Application.CreateForm(TfMain, fMain);
   Application.Run;
