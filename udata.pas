@@ -13,6 +13,7 @@ type
   TGauntOrgType = (wall, trap_bound_wall, gate_h, gate_v, exit);
   TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
 
+
   TGauntStyle = record
     id: integer;
     Name: string;
@@ -141,6 +142,7 @@ const
     (id: $27; fileName: 'gen_grunt_1.png'),
     (id: $28; fileName: 'gen_grunt_1.png'),
     (id: $29; fileName: 'gen_grunt_1.png'),
+    (id: $2b; fileName: 'gen_grunt_1.png'),
     (id: $2a; fileName: 'gen_grunt_1.png'),
     (id: $2c; fileName: 'gen_grunt_1.png'),
     (id: $2d; fileName: 'gen_grunt_1.png'),
@@ -150,9 +152,9 @@ const
     (id: $30; fileName: 'transporter.png'),
     (id: $31; fileName: 'bad_cider.png'),
     (id: $32; fileName: 'keyring.png'),
-    (id: $33; fileName: 'breakable_wall_3.png'),
-    (id: $34; fileName: 'breakable_wall_2.png'),
-    (id: $35; fileName: 'breakable_wall_1.png'),
+    (id: $33 + 0 * STYLES_OFFSET; fileName: 'breakable_wall_0_3.png'),
+    (id: $34 + 0 * STYLES_OFFSET; fileName: 'breakable_wall_0_2.png'),
+    (id: $35 + 0 * STYLES_OFFSET; fileName: 'breakable_wall_0_1.png'),
     (id: $36; fileName: 'exit.png'),
     (id: $40; fileName: 'ghost.png'),
     (id: $41; fileName: 'grunt.png'),
@@ -176,6 +178,9 @@ const
     (id: $0e + 1 * STYLES_OFFSET; fileName: 'wall01_0e.png'),
     (id: $0f + 1 * STYLES_OFFSET; fileName: 'wall01_0f.png'),
     (id: $10 + 1 * STYLES_OFFSET; fileName: 'wall01_10.png'),
+    (id: $33 + 1 * STYLES_OFFSET; fileName: 'breakable_wall_1_3.png'),
+    (id: $34 + 1 * STYLES_OFFSET; fileName: 'breakable_wall_1_2.png'),
+    (id: $35 + 1 * STYLES_OFFSET; fileName: 'breakable_wall_1_1.png'),
     (id: $01 + 2 * STYLES_OFFSET; fileName: 'wall02_01.png'),
     (id: $02 + 2 * STYLES_OFFSET; fileName: 'wall02_02.png'),
     (id: $03 + 2 * STYLES_OFFSET; fileName: 'wall02_03.png'),
@@ -192,6 +197,9 @@ const
     (id: $0e + 2 * STYLES_OFFSET; fileName: 'wall02_0e.png'),
     (id: $0f + 2 * STYLES_OFFSET; fileName: 'wall02_0f.png'),
     (id: $10 + 2 * STYLES_OFFSET; fileName: 'wall02_10.png'),
+    (id: $33 + 2 * STYLES_OFFSET; fileName: 'breakable_wall_2_3.png'),
+    (id: $34 + 2 * STYLES_OFFSET; fileName: 'breakable_wall_2_2.png'),
+    (id: $35 + 2 * STYLES_OFFSET; fileName: 'breakable_wall_2_1.png'),
     (id: $01 + 3 * STYLES_OFFSET; fileName: 'wall03_01.png'),
     (id: $02 + 3 * STYLES_OFFSET; fileName: 'wall03_02.png'),
     (id: $03 + 3 * STYLES_OFFSET; fileName: 'wall03_03.png'),
@@ -208,6 +216,9 @@ const
     (id: $0e + 3 * STYLES_OFFSET; fileName: 'wall03_0e.png'),
     (id: $0f + 3 * STYLES_OFFSET; fileName: 'wall03_0f.png'),
     (id: $10 + 3 * STYLES_OFFSET; fileName: 'wall03_10.png'),
+    (id: $33 + 3 * STYLES_OFFSET; fileName: 'breakable_wall_3_3.png'),
+    (id: $34 + 3 * STYLES_OFFSET; fileName: 'breakable_wall_3_2.png'),
+    (id: $35 + 3 * STYLES_OFFSET; fileName: 'breakable_wall_3_1.png'),
     (id: $01 + 4 * STYLES_OFFSET; fileName: 'wall04_01.png'),
     (id: $02 + 4 * STYLES_OFFSET; fileName: 'wall04_02.png'),
     (id: $03 + 4 * STYLES_OFFSET; fileName: 'wall04_03.png'),
@@ -224,6 +235,9 @@ const
     (id: $0e + 4 * STYLES_OFFSET; fileName: 'wall04_0e.png'),
     (id: $0f + 4 * STYLES_OFFSET; fileName: 'wall04_0f.png'),
     (id: $10 + 4 * STYLES_OFFSET; fileName: 'wall04_10.png'),
+    (id: $33 + 4 * STYLES_OFFSET; fileName: 'breakable_wall_4_3.png'),
+    (id: $34 + 4 * STYLES_OFFSET; fileName: 'breakable_wall_4_2.png'),
+    (id: $35 + 4 * STYLES_OFFSET; fileName: 'breakable_wall_4_1.png'),
     (id: $01 + 5 * STYLES_OFFSET; fileName: 'wall05_01.png'),
     (id: $02 + 5 * STYLES_OFFSET; fileName: 'wall05_02.png'),
     (id: $03 + 5 * STYLES_OFFSET; fileName: 'wall05_03.png'),
@@ -240,6 +254,9 @@ const
     (id: $0e + 5 * STYLES_OFFSET; fileName: 'wall05_0e.png'),
     (id: $0f + 5 * STYLES_OFFSET; fileName: 'wall05_0f.png'),
     (id: $10 + 5 * STYLES_OFFSET; fileName: 'wall05_10.png'),
+    (id: $33 + 5 * STYLES_OFFSET; fileName: 'breakable_wall_5_3.png'),
+    (id: $34 + 5 * STYLES_OFFSET; fileName: 'breakable_wall_5_2.png'),
+    (id: $35 + 5 * STYLES_OFFSET; fileName: 'breakable_wall_5_1.png'),
     (id: $01 + 6 * STYLES_OFFSET; fileName: 'wall06_01.png'),
     (id: $02 + 6 * STYLES_OFFSET; fileName: 'wall06_02.png'),
     (id: $03 + 6 * STYLES_OFFSET; fileName: 'wall06_03.png'),
@@ -256,6 +273,9 @@ const
     (id: $0e + 6 * STYLES_OFFSET; fileName: 'wall06_0e.png'),
     (id: $0f + 6 * STYLES_OFFSET; fileName: 'wall06_0f.png'),
     (id: $10 + 6 * STYLES_OFFSET; fileName: 'wall06_10.png'),
+    (id: $33 + 6 * STYLES_OFFSET; fileName: 'breakable_wall_6_3.png'),
+    (id: $34 + 6 * STYLES_OFFSET; fileName: 'breakable_wall_6_2.png'),
+    (id: $35 + 6 * STYLES_OFFSET; fileName: 'breakable_wall_6_1.png'),
     (id: $01 + 7 * STYLES_OFFSET; fileName: 'wall07_01.png'),
     (id: $02 + 7 * STYLES_OFFSET; fileName: 'wall07_02.png'),
     (id: $03 + 7 * STYLES_OFFSET; fileName: 'wall07_03.png'),
@@ -271,7 +291,10 @@ const
     (id: $0d + 7 * STYLES_OFFSET; fileName: 'wall07_0d.png'),
     (id: $0e + 7 * STYLES_OFFSET; fileName: 'wall07_0e.png'),
     (id: $0f + 7 * STYLES_OFFSET; fileName: 'wall07_0f.png'),
-    (id: $10 + 7 * STYLES_OFFSET; fileName: 'wall07_10.png')
+    (id: $10 + 7 * STYLES_OFFSET; fileName: 'wall07_10.png'),
+    (id: $33 + 7 * STYLES_OFFSET; fileName: 'breakable_wall_7_3.png'),
+    (id: $34 + 7 * STYLES_OFFSET; fileName: 'breakable_wall_7_2.png'),
+    (id: $35 + 7 * STYLES_OFFSET; fileName: 'breakable_wall_7_1.png')
     );
 
 var
@@ -504,5 +527,6 @@ begin
   else
     Result := '';
 end;
+
 
 end.

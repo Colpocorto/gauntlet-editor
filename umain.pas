@@ -11,7 +11,7 @@ uses
   StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel, cyCheckbox,
   BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRASpeedButton,
   BGRACustomDrawn, BCComboBox, BGRAThemeCheckBox, BGRAGradientScanner,
-  BGRABitmapTypes;
+  BGRABitmapTypes, GraphType, ImgList;
 
 type
 
@@ -50,6 +50,7 @@ type
     aExit: TFileExit;
     aSaveMaze: TFileSaveAs;
     ilStyles: TImageList;
+    ilTools: TImageList;
     leName: TLabeledEdit;
     panStyles: TPanel;
     cbWrapV: TplCheckBox;
@@ -75,6 +76,8 @@ type
     procedure aStyleExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure ToolButtonClick(Sender: TObject);
+    procedure PatternButtonClick(Sender: TObject);
     procedure leNameDblClick(Sender: TObject);
     procedure leNameExit(Sender: TObject);
     procedure leNameKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
@@ -84,15 +87,52 @@ type
     procedure CreateOptionPanels(AContainer: TWinControl);
     procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
-
+    procedure ExpandPanelResize(Sender: TObject);
     function AddNewMaze: integer;
+    function PatternButtonFactory(AContainer: TWinControl; AImageList: TImageList;
+      AImageIndex: integer; AGroupIndex: integer; AName: string;
+      ACaption: string; Id: integer; AOnClick: TNotifyEvent): TSpeedButton;
+    procedure enablePatternButtons(low: integer; high: integer);
+    procedure disablePatternButtons(low: integer; high: integer);
+    procedure ConstructOnMap(Sender: TObject; shift: TShiftState);
+    procedure PlaceObject(Sender: TObject; shift: TShiftState);
+    procedure BindToTrap(Sender: TObject; shift: TShiftState);
   private
     procedure NameEdit;
-    procedure CreateInfoCtrls(AParent: TCustomControl);
+    procedure CreateToolsCtrls(AParent: TCustomControl);
+
+    procedure CreatePatternCtrls(AParent: TCustomControl);
     function ExpandPanelFactory(AContainer: TWinControl; AName: string;
-      ACaption: string): TBCExpandPAnel;
+      ACaption: string; AHeight: integer): TBCExpandPAnel;
   public
 
+  end;
+
+  TPatternButton = class(TSpeedButton)
+  private
+    FPatternId: integer;
+  public
+    property PatternId: integer read FPatternId write FPatternId;
+  end;
+
+  TGauntTool = (gtPointer, gtPlaceObj, gtEraser, gtBindTrap, gtGlass, gtConstruct,
+    gtPlacePly, gtTestMaze, gtQuestion);
+
+  TGauntToolBox = class(TComponent)
+  private
+    FTool: TGauntTool;
+    FWallId: integer;
+    FObjectId: integer;
+    FTrapBound: boolean;
+  public
+    constructor Create(AOwner: TComponent);
+    procedure SetTool(ATool: TGauntTool);
+    function GetTool: TGauntTool;
+    function SetWall(AWallId: integer): boolean;
+    function GetWall: integer;
+    function SetObject(AObjectId: integer): boolean;
+    function GetObject: integer;
+    property TrapBound: boolean read FTrapBound write FTrapBound;
   end;
 
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
@@ -102,6 +142,7 @@ function GetShiftState(): TShiftState;
 
 var
   fMain: TfMain;
+  ToolBox: TGauntToolBox;
 
 implementation
 
@@ -113,6 +154,7 @@ procedure TfMain.FormCreate(Sender: TObject);
 begin
 
   self.Caption := Application.Title;
+  ToolBox := TGauntToolBox.Create(self);
 
   //Load graphics
   uData.loadGraphics(self, dgMap.DefaultColWidth);
@@ -125,8 +167,18 @@ begin
   //Create expandable panels
   CreateOptionPanels(self.scrollOptions);
 
-  //Panel maze info
-  CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
+  //Tool controls
+  CreateToolsCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expTools')));
+  //temporarily remove the pointer button since it has no function yet
+  TSpeedButton(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expTools')).Controls[1]).Visible := False;
+
+  //Pattern controls
+  CreatePatternCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expObjects')));
+
+  //click the pencil by default. Take into account the Controls[0] is the own expand/collapse button of the panel
+  TSpeedButton(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expTools')).Controls[2]).Down
+  := True;
+  TSpeedButton(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expTools')).Controls[2]).Click;
 
   //Adjust dimensions
   dgMap.Width := dgMap.ColCount * dgMap.DefaultColWidth;
@@ -159,13 +211,13 @@ var
   tempObj: TBCExpandPanel;
 begin
   //create maze info panel
-  tempObj := ExpandPanelFactory(AContainer, 'expMazeInfo', 'Info panel');
+  tempObj := ExpandPanelFactory(AContainer, 'expMazeInfo', 'Info panel', 300);
   BCEPanelsOpt.AddPanel(tempObj);
 
-  tempObj := ExpandPanelFactory(AContainer, 'expTools', 'Edition tools');
+  tempObj := ExpandPanelFactory(AContainer, 'expTools', 'Edition tools', 300);
   BCEPanelsOpt.AddPanel(tempObj);
 
-  tempObj := ExpandPanelFactory(AContainer, 'expObjects', 'Objects');
+  tempObj := ExpandPanelFactory(AContainer, 'expObjects', 'Objects', 1200);
   BCEPanelsOpt.AddPanel(tempObj);
 
   BCEPanelsOpt.ArrangePanels;
@@ -279,10 +331,11 @@ procedure TfMain.dgMapDrawCell(Sender: TObject; aCol, aRow: integer;
 var
   MapCol, MapRow: integer;
   cell: integer;
+  trapBound: boolean = False;
 begin
 
   //check if cell belongs to frame
-
+  dgMap.Canvas.Brush.Style := bsSolid;
   dgMap.Canvas.Brush.Color := $d08010;
   dgMap.Canvas.Font.Color := clWhite;
 
@@ -310,22 +363,41 @@ begin
       MapRow := aRow - 1;
       cell := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData
         [MapCol, MapRow];
+      if (cell and $80) <> 0 then
+      begin
+        trapBound := True;
+        cell := cell and $7f;
+      end;
       case cell of
         0:
         begin
           dgMap.Canvas.Brush.Color := dgMap.Color;
+          dgMap.Canvas.Brush.Style := bsSolid;
           dgMap.Canvas.FillRect(aRect);      //delete block
         end;
         1..$45:
         begin
-          if cell <= $10 then
+          if (cell <= $10) or ((cell >= $33) and (cell <= $35)) then
           begin
             //apply style
             cell := cell + STYLES_OFFSET * TGauntMaze(
               tabsMain.GetTabData(tabsMain.tabIndex).TabObject).Style.id;
           end;
-          ilMap.Draw(dgMap.Canvas,
-            aRect.TopLeft.X, aRect.TopLeft.Y, patternIndexMap[cell], True);
+
+          //add the visual effect to indicate the block will disappear when a
+          //trap is hit
+          if not (trapBound) then
+          begin
+            ilMap.Draw(dgMap.Canvas,
+              aRect.TopLeft.X, aRect.TopLeft.Y, patternIndexMap[cell], True);
+          end
+          else
+          begin
+            ilMap.Draw(dgMap.Canvas,
+              aRect.TopLeft.X, aRect.TopLeft.Y,
+              patternIndexMap[cell], TDrawingStyle.dsNormal, itImage,
+              TGraphicsDrawEffect.gdeHighlighted);
+          end;
         end;
 
       end;
@@ -338,14 +410,7 @@ procedure TfMain.dgMapMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integ
 begin
   if ssLeft in Shift then
   begin
-    if ssCtrl in Shift then
-    begin
-      WriteCell(dgMap, 0);
-    end
-    else
-    begin
-      WriteCell(dgMap, $0a);
-    end;
+    ConstructOnMap(Sender, Shift);
   end;
 end;
 
@@ -359,15 +424,80 @@ end;
 
 procedure TfMain.dgMapClick(Sender: TObject);
 begin
-  if ssCtrl in GetShiftState then
+  case toolBox.GetTool of
+    gtEraser:
+      ConstructOnMap(Sender, GetShiftState);
+    gtConstruct:
+      ConstructOnMap(Sender, GetShiftState);
+    gtPlaceObj:
+      PlaceObject(Sender, GetShiftState);
+    gtBindTrap:
+      BindToTrap(Sender, GetShiftState);
+  end;
+  dgMap.Repaint;
+end;
+
+procedure TfMain.BindToTrap(Sender: TObject; shift: TShiftState);
+var
+  Col, Row: integer;
+  minCol: integer = 1;
+  currentValue: integer;
+  grid: TCustomGrid;
+begin
+  grid := TCustomGrid(Sender);
+  // Get the cell coordinates from the mouse click
+  grid.MouseToCell(grid.ScreenToClient(Mouse.CursorPos).X,
+    grid.ScreenToClient(Mouse.CursorPos).Y, Col, Row);
+  if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).GetHorzWrap() then
+    minCol := 0
+  else
+    minCol := 1;
+
+  if (Col > minCol) and (Col < 33) and (Row > 1) and (Row < 33) then
+  begin
+    //update map matrix
+    currentValue := TGauntMaze(tabsMain.GetTabData(
+      tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
+
+    if (currentValue < $80) then
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
+        1, Row - 1] := currentValue or $80
+    else
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
+        1, Row - 1] := currentValue and $7f;
+  end;
+
+end;
+
+procedure TfMain.PlaceObject(Sender: TObject; shift: TShiftState);
+begin
+  if ssCtrl in shift then
   begin
     WriteCell(dgMap, 0);
   end
   else
   begin
-    WriteCell(dgMap, $0a);
+    WriteCell(dgMap, toolBox.GetObject);
   end;
-  dgMap.Repaint;
+end;
+
+procedure TfMain.ConstructOnMap(Sender: TObject; shift: TShiftState);
+begin
+  case toolBox.GetTool() of
+    gtEraser:
+    begin
+      WriteCell(dgMap, 0);
+    end;
+    gtConstruct:
+      if ssCtrl in shift then
+      begin
+        WriteCell(dgMap, 0);
+      end
+      else
+      begin
+        WriteCell(dgMap, toolBox.GetWall);
+      end;
+  end;
 end;
 
 procedure TfMain.cbWrapVClick(Sender: TObject);
@@ -410,7 +540,6 @@ begin
   self.leName.Color := $5f5f5f;
 end;
 
-
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 var
@@ -442,35 +571,98 @@ begin
     //update map matrix
     TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
       1, Row - 1] := index;
-
   end;
 
 end;
 
-procedure TfMain.CreateInfoCtrls(AParent: TCustomControl);
+procedure TfMain.CreateToolsCtrls(AParent: TCustomControl);
+begin
+  PatternButtonFactory(AParent, ilTools, 0, 2, 'btnPointer', 'Selection tool',
+    0, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 1, 2, 'btnConstruct', 'Build walls and gates',
+    1, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 2, 2, 'btnObject', 'Place object',
+    2, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 3, 2, 'btnEraser', 'Erase block', 3,
+    @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 4, 2, 'btnBindTrap',
+    'Make block disappear', 4, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 5, 2, 'btnGlass', 'Analyse block',
+    5, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 6, 2, 'btnPlacePly',
+    'Place Player', 6, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 7, 0, 'btnVerify', 'Verify the Maze',
+    7, @ToolButtonClick);
+
+end;
+
+procedure TfMain.CreatePatternCtrls(AParent: TCustomControl);
 var
   i: integer;
-  btn: TSpeedButton;
 begin
-  for i := 0 to 19 do
+  for i := 1 to $58 do
   begin
-    btn := TSpeedButton.Create(AParent);
-    btn.Align:=alNone;
-    btn.Caption:='TST';
-    btn.AutoSize:=false;
-    btn.Parent := AParent;
-    btn.Visible := True;
-    btn.Enabled := True;
-    btn.Height := 50;
-    btn.Width := 50;
-    //btn.Top := TBCExpandPanel(AParent).Button.Height;
-    //   AParent.InsertControl(btn);
-
+    PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[i], 3,
+      'btnPattern' + IntToStr(i), 'Pattern ' + IntToStr(i), i, @PatternButtonClick);
   end;
+end;
+
+procedure TfMain.ToolButtonClick(Sender: TObject);
+begin
+
+  case TPatternButton(Sender).PatternId of
+    0: toolBox.SetTool(gtPointer);
+    1: toolBox.SetTool(gtConstruct);
+    2: toolBox.SetTool(gtPlaceObj);
+    3: toolBox.SetTool(gtEraser);
+    4: toolBox.SetTool(gtBindTrap);
+    5: toolBox.SetTool(gtGlass);
+    6: toolBox.SetTool(gtPlacePly);
+    7: toolBox.SetTool(gtTestMaze);
+  end;
+end;
+
+procedure TfMain.PatternButtonClick(Sender: TObject);
+begin
+  case toolBox.GetTool of
+    gtConstruct:
+      toolBox.SetWall(TPatternButton(Sender).PatternId);
+    gtPlaceObj:
+      toolBox.SetObject(TPatternButton(Sender).PatternId);
+  end;
+end;
+
+function TfMain.PatternButtonFactory(AContainer: TWinControl;
+  AImageList: TImageList; AImageIndex: integer; AGroupIndex: integer;
+  AName: string; ACaption: string; Id: integer; AOnClick: TNotifyEvent): TSpeedButton;
+begin
+  Result := TPatternButton.Create(AContainer);
+
+  Result.Align := alNone;
+  Result.Anchors := [akLeft, akTop];
+  Result.AnchorSide[akLeft].Control := nil;
+  Result.AnchorSide[akTop].Control := nil;
+  Result.Caption := '';
+  Result.Hint := ACaption;
+  Result.ShowHint := True;
+  Result.AutoSize := False;
+  Result.ImageWidth := 32;
+  Result.Images := AImageList;
+  Result.ImageIndex := AImageIndex;
+  Result.flat := True;
+  Result.Visible := True;
+  Result.Enabled := True;
+  Result.BorderSpacing.CellAlignHorizontal := ccaFill;
+  Result.OnClick := AOnClick;
+  Result.Parent := AContainer;
+  Result.ControlStyle := Result.ControlStyle + [csFixedWidth, csFixedHeight];
+  TPatternButton(Result).PatternId := Id;
+  Result.GroupIndex := AGroupIndex;
+
 end;
 
 function TfMain.ExpandPanelFactory(AContainer: TWinControl; AName: string;
-  ACaption: string): TBCExpandPAnel;
+  ACaption: string; AHeight: integer): TBCExpandPAnel;
 var
   tmppic: TPicture;
 begin
@@ -483,7 +675,8 @@ begin
     Anchors := [akTop, akLeft, akRight];
     Animated := True;
     AnimationSpeed := 60;
-    Result.BevelWidth:=16;
+    AutoSize := False;
+    BevelWidth := 16;
     BevelInner := bvSpace;
     BevelOuter := bvNone;
     Button.Caption := ACaption;
@@ -512,20 +705,144 @@ begin
     ButtonSize := 32;
     Name := AName;
     Caption := '';
+    ChildSizing.EnlargeHorizontal := crsAnchorAligning;
+    ChildSizing.EnlargeVertical := crsAnchorAligning;
+    ChildSizing.ShrinkHorizontal := crsSameSize;
+    ChildSizing.ShrinkVertical := crsSameSize;
+    ChildSizing.ControlsPerLine :=
+      trunc((ClientWidth - BevelWidth - ChildSizing.HorizontalSpacing) /
+      (32 + ChildSizing.HorizontalSpacing));
+
     ChildSizing.HorizontalSpacing := 16;
     ChildSizing.Layout := cclLeftToRightThenTopToBottom;
     ChildSizing.VerticalSpacing := 16;
     CollapseKind := akTop;
     Color := $1f1f1f;
-    Height := 300;
+    Height := AHeight;
     ParentBackground := False;
     Parent := AContainer;
     Rounding.RoundX := 0;
     Rounding.RoundY := 0;
     Visible := True;
     Width := AContainer.ClientWidth;
-
+    OnResize := @ExpandPanelResize;
   end;
+end;
+
+procedure TfMain.ExpandPanelResize(Sender: TObject);
+begin
+  TBCExpandPanel(Sender).ChildSizing.ControlsPerLine :=
+    trunc((TBCExpandPanel(Sender).ClientWidth - TBCExpandPanel(Sender).BevelWidth -
+    TBCExpandPanel(Sender).ChildSizing.HorizontalSpacing) /
+    (32 + TBCExpandPanel(Sender).ChildSizing.HorizontalSpacing));
+
+end;
+
+procedure TfMain.enablePatternButtons(low: integer; high: integer);
+var
+  i: integer;
+  panel: TBCExpandPanel;
+begin
+  panel := BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expObjects'));
+  for i := 0 to panel.ControlCount - 1 do
+  begin
+    if (TPatternButton(panel.Controls[i]).PatternId >= low) and
+      (TPatternButton(panel.Controls[i]).PatternId <= high) then
+      TPatternButton(panel.Controls[i]).Enabled := True;
+  end;
+end;
+
+procedure TfMain.disablePatternButtons(low: integer; high: integer);
+var
+  i: integer;
+  panel: TBCExpandPanel;
+begin
+  panel := BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expObjects'));
+  for i := 0 to panel.ControlCount - 1 do
+  begin
+    if (TPatternButton(panel.Controls[i]).PatternId >= low) and
+      (TPatternButton(panel.Controls[i]).PatternId <= high) then
+      TPatternButton(panel.Controls[i]).Enabled := False;
+  end;
+end;
+
+constructor TGauntToolBox.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  self.FTool := gtConstruct;
+  self.FObjectId := $12;
+  self.FWallId := $10;
+  self.FTrapBound := False;
+end;
+
+procedure TGauntToolBox.SetTool(ATool: TGauntTool);
+var
+  i: integer;
+  panel: TBCExpandPanel;
+begin
+  //this coupling is quite ugly, should be changed by a different approach in the future
+  panel := fMain.BCEPanelsOpt.Panel(fMain.BCEPanelsOpt.IdxOfPanel('expObjects'));
+
+  FTool := ATool;
+  case FTool of
+    gtConstruct:
+    begin
+      TfMain(self.Owner).enablePatternButtons($01, $12);
+      TfMain(self.Owner).disablePatternButtons($13, $6f);
+      //push down the pattern button
+      for i := 0 to panel.ControlCount - 1 do
+      begin
+        if (TPatternButton(panel.Controls[i]).PatternId = self.GetWall) then
+        begin
+          TPatternButton(panel.Controls[i]).Down := True;
+        end;
+      end;
+    end;
+    gtPlaceObj:
+    begin
+      TfMain(self.Owner).disablePatternButtons($01, $12);
+      TfMain(self.Owner).enablePatternButtons($13, $6f);
+      //push down the pattern button
+      for i := 0 to panel.ControlCount - 1 do
+      begin
+        if (TPatternButton(panel.Controls[i]).PatternId = self.GetObject) then
+        begin
+          TPatternButton(panel.Controls[i]).Down := True;
+        end;
+      end;
+    end;
+    else
+    begin
+      TfMain(self.Owner).disablePatternButtons($01, $6f);
+    end;
+  end;
+end;
+
+function TGauntToolBox.GetTool(): TGauntTool;
+begin
+  Result := FTool;
+end;
+
+function TGauntToolBox.SetWall(AWallId: integer): boolean;
+begin
+  FWallId := AWallId;
+  Result := True;
+end;
+
+function TGauntToolBox.GetWall: integer;
+begin
+  Result := FWallId;
+end;
+
+function TGauntToolBox.SetObject(AObjectId: integer): boolean;
+begin
+  FObjectId := AObjectId;
+  Result := True;
+end;
+
+function TGauntToolBox.GetObject(): integer;
+begin
+  Result := FObjectId;
 end;
 
 function GetShiftState(): TShiftState;
