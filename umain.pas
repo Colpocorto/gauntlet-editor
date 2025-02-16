@@ -6,11 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
-  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, CheckBoxThemed, Types,
+  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, Types,
   uData, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns, Buttons,
-  StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel, cyCheckbox,
-  BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRASpeedButton,
-  BGRACustomDrawn, BCComboBox, BGRAThemeCheckBox, BGRAGradientScanner,
+  StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
+  BCExpandPanels, BGRATheme, attabs, BGRABitmap,
+  BGRACustomDrawn, BCComboBox, BGRAGradientScanner,
   BGRABitmapTypes, GraphType, ImgList;
 
 type
@@ -18,6 +18,7 @@ type
   { TfMain }
 
   TfMain = class(TForm)
+    aProcessMaze: TAction;
     aSaveExport: TAction;
     aGoEditName: TAction;
     aStyle4: TAction;
@@ -66,6 +67,7 @@ type
     scrollOptions: TScrollBox;
     timerMain: TTimer;
     procedure aGoEditNameExecute(Sender: TObject);
+    procedure aProcessMazeExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
     procedure cbWrapHClick(Sender: TObject);
     procedure cbWrapVClick(Sender: TObject);
@@ -187,7 +189,7 @@ begin
   hSplitter.Position := dgMap.Width + 32;
 
   //start timer for graphics refreshing
-  timerMain.Interval := 33;
+  //timerMain.Interval := 33;
   //timerMain.Enabled := True;
 
 end;
@@ -540,6 +542,19 @@ begin
   self.leName.Color := $5f5f5f;
 end;
 
+procedure TfMain.aProcessMazeExecute(Sender: TObject);
+var
+  processResult: integer;
+begin
+  processResult := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).ProcessMap;
+  case processResult of
+    -1: ShowMessage('The walls layer is too big!');
+    -2: ShowMessage ('The RLE layer is too big');
+    else
+        ShowMessage ('Map compiled successfully. Size: ' + intToStr(processResult));
+  end;
+end;
+
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 var
@@ -592,7 +607,7 @@ begin
   PatternButtonFactory(AParent, ilTools, 6, 2, 'btnPlacePly',
     'Place Player', 6, @ToolButtonClick);
   PatternButtonFactory(AParent, ilTools, 7, 0, 'btnVerify', 'Verify the Maze',
-    7, @ToolButtonClick);
+    7, @aProcessMazeExecute);
 
 end;
 
@@ -600,11 +615,63 @@ procedure TfMain.CreatePatternCtrls(AParent: TCustomControl);
 var
   i: integer;
 begin
-  for i := 1 to $58 do
+  //Add walls and objects
+  for i := 1 to $36 do
   begin
     PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[i], 3,
-      'btnPattern' + IntToStr(i), 'Pattern ' + IntToStr(i), i, @PatternButtonClick);
+      'btnPattern' + IntToStr(i), FindPatternDataById(i).desc, i, @PatternButtonClick);
   end;
+
+  //Add enemies
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$40],
+    3, 'btnPattern' + IntToStr($40), FindPatternDataById($40).desc,
+    $40, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$41],
+    3, 'btnPattern' + IntToStr($41), FindPatternDataById($41).desc,
+    $41, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$42],
+    3, 'btnPattern' + IntToStr($42), FindPatternDataById($42).desc,
+    $42, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$48], 3,
+    'btnPattern' + IntToStr($48), FindPatternDataById($48).desc, $48,
+    @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$49], 3,
+    'btnPattern' + IntToStr($49), FindPatternDataById($49).desc, $49,
+    @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$4a],
+    3, 'btnPattern' + IntToStr($4a), FindPatternDataById($4a).desc,
+    $4a, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$50],
+    3, 'btnPattern' + IntToStr($50), FindPatternDataById($50).desc,
+    $50, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap, PatternIndexMap[$51],
+    3, 'btnPattern' + IntToStr($51), FindPatternDataById($51).desc,
+    $51, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$52], 3, 'btnPattern' + IntToStr($52),
+    FindPatternDataById($52).desc, $52, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$58], 3, 'btnPattern' + IntToStr($58),
+    FindPatternDataById($58).desc, $58, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$59], 3, 'btnPattern' + IntToStr($59),
+    FindPatternDataById($59).desc, $59, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$5a], 3, 'btnPattern' + IntToStr($5a),
+    FindPatternDataById($5a).desc, $5a, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$60], 3, 'btnPattern' + IntToStr($60),
+    FindPatternDataById($60).desc, $60, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$61], 3, 'btnPattern' + IntToStr($61),
+    FindPatternDataById($61).desc, $61, @PatternButtonClick);
+  PatternButtonFactory(AParent, uData.ilMap,
+    PatternIndexMap[$62], 3, 'btnPattern' + IntToStr($62),
+    FindPatternDataById($62).desc, $62, @PatternButtonClick);
+  PatternButtonFactory(AParent,
+    uData.ilMap, PatternIndexMap[$68], 3, 'btnPattern' + IntToStr($68),
+    FindPatternDataById($68).desc, $68, @PatternButtonClick);
+
 end;
 
 procedure TfMain.ToolButtonClick(Sender: TObject);
@@ -644,6 +711,7 @@ begin
   Result.AnchorSide[akTop].Control := nil;
   Result.Caption := '';
   Result.Hint := ACaption;
+  Result.Name := AName;
   Result.ShowHint := True;
   Result.AutoSize := False;
   Result.ImageWidth := 32;
@@ -742,13 +810,18 @@ procedure TfMain.enablePatternButtons(low: integer; high: integer);
 var
   i: integer;
   panel: TBCExpandPanel;
+  tmpobj: TObject;
 begin
   panel := BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expObjects'));
   for i := 0 to panel.ControlCount - 1 do
   begin
-    if (TPatternButton(panel.Controls[i]).PatternId >= low) and
-      (TPatternButton(panel.Controls[i]).PatternId <= high) then
-      TPatternButton(panel.Controls[i]).Enabled := True;
+    tmpobj := panel.Controls[i];
+    if tmpobj is TSpeedButton then
+    begin
+      if (TPatternButton(panel.Controls[i]).PatternId >= low) and
+        (TPatternButton(panel.Controls[i]).PatternId <= high) then
+        TPatternButton(panel.Controls[i]).Enabled := True;
+    end;
   end;
 end;
 
@@ -756,13 +829,18 @@ procedure TfMain.disablePatternButtons(low: integer; high: integer);
 var
   i: integer;
   panel: TBCExpandPanel;
+  tmpobj: TObject;
 begin
   panel := BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expObjects'));
   for i := 0 to panel.ControlCount - 1 do
   begin
-    if (TPatternButton(panel.Controls[i]).PatternId >= low) and
-      (TPatternButton(panel.Controls[i]).PatternId <= high) then
-      TPatternButton(panel.Controls[i]).Enabled := False;
+    tmpobj := panel.Controls[i];
+    if tmpobj is TSpeedButton then
+    begin
+      if (TPatternButton(panel.Controls[i]).PatternId >= low) and
+        (TPatternButton(panel.Controls[i]).PatternId <= high) then
+        TPatternButton(panel.Controls[i]).Enabled := False;
+    end;
   end;
 end;
 
@@ -790,7 +868,8 @@ begin
       TfMain(self.Owner).enablePatternButtons($01, $12);
       TfMain(self.Owner).disablePatternButtons($13, $6f);
       //push down the pattern button
-      for i := 0 to panel.ControlCount - 1 do
+      for i := 1 to panel.ControlCount - 1 do
+        //0 is the header, so first user added control should be 1
       begin
         if (TPatternButton(panel.Controls[i]).PatternId = self.GetWall) then
         begin
@@ -803,7 +882,7 @@ begin
       TfMain(self.Owner).disablePatternButtons($01, $12);
       TfMain(self.Owner).enablePatternButtons($13, $6f);
       //push down the pattern button
-      for i := 0 to panel.ControlCount - 1 do
+      for i := 1 to panel.ControlCount - 1 do
       begin
         if (TPatternButton(panel.Controls[i]).PatternId = self.GetObject) then
         begin

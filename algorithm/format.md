@@ -123,7 +123,7 @@ Offset:
             S   =   shot can stun other players
             H   =   shot can hurt other players
   
-+02   LxCCCxxx    => 
++02   LxCCCxxx    => 0011 1000
             CCC = style (colour scheme + brick pattern)
                 0   ->  6, A,     chess   pattern   (red, yellow)       *
                 1   ->  C, 3,     brick   pattern   (dark green, green) *
@@ -136,7 +136,7 @@ Offset:
 
             L = MSB of size stored at +00
 
-+03         WALL DE ITION BLOCK SIZE (max 255)
++03         WALL DEFINITION BLOCK SIZE (max 255)
 +04         WALL DEFINITION DATA
 +(size of previous block)
             OBJECT DEFINITION BLOCK DATA
@@ -190,7 +190,7 @@ Available commands for wall drawing:
 
 Possible commands for block definition:
 
-* Advance MAZE_BUF cursor. MSB + 1 + number of positions to advance (lineary). (the counter is increased by one to adjust the range to 1-128)
+* Advance MAZE_BUF cursor. MSB + -1 + number of positions to advance (lineary). (the counter is increased by one to adjust the range to 1-128)
 * Iter      #nn    repeat the former object #nn times (N<=#12>).
 * Object.   #NN    object number (from list [PATTERN LIST], N>#12). Cursor is advanced to the next position.   
 * Charpos.  #3F    character position? CHECK   00111111
@@ -201,6 +201,20 @@ Possible commands for block definition:
                 #58 011 Lobber * 3
                 #60 100 Sorcerer * 3
                 #68 101 Death
+
+                01eee0vv
+                01000000    ->  #40 ghost
+                01001000    ->  #48 Grunt
+                01010000    ->  #50 Demon
+                01011000    ->  #58 Lobber
+                01100000    ->  #60 Sorcerer
+                01101000    ->  #68 Death
+                
+                01000000
+                01000001
+                01000010
+                01000011
+                01eee100
             
             bits 10 might be enemy's power CHECK
 

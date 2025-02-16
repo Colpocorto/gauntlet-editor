@@ -8,7 +8,6 @@ object fMain: TfMain
   ClientWidth = 1200
   Color = 3881787
   Font.Color = 15263976
-  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
   OnResize = FormResize
   object hSplitter: TPairSplitter
@@ -589,6 +588,10 @@ object fMain: TfMain
       Category = 'File'
       Caption = 'Save/&Export ...'
       ImageIndex = 1
+    end
+    object aProcessMaze: TAction
+      Caption = 'Verify Maze'
+      OnExecute = aProcessMazeExecute
     end
   end
   object timerMain: TTimer

@@ -1,29 +1,25 @@
-# README #
+# GAUNTLET EDITOR v1.0 #
 
-This README would normally document whatever steps are necessary to get your application up and running.
 
-### What is this repository for? ###
+### About this program ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+'Gauntlet Editor' is a Crossplatform editor for the game Gauntlet for MSX computers
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+Gauntlet Editor has been written in Lazarus IDE and FreePascal with the purpose of being multiplatform (Windows, Mac, Linux).
 
-### Contribution guidelines ###
+To build Gauntlet Editor, Freepascal v3.2.2 or upper must be used, as well as Lazarus IDE (V3.8 or later).
 
-* Writing tests
-* Code review
-* Other guidelines
+Gauntlet Editor needs a range of packages installed on Lazarus. They will be required as needed. Just install them by following the instructions.
+Additionally, Linux building requires QT6 files to be distribuiteda as part of the build.
 
-### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+### ToDo feature list ###
+
+* Fix starting of "draw gate" command
+* Support for the ZX Spectrum version
+* Database persistence
+* Preview based on WebMSX
+* Undo/Redo
+* Place character start point
