@@ -99,6 +99,7 @@ type
     procedure ConstructOnMap(Sender: TObject; shift: TShiftState);
     procedure PlaceObject(Sender: TObject; shift: TShiftState);
     procedure BindToTrap(Sender: TObject; shift: TShiftState);
+    procedure PlacePlayer(Sender: TObject);
   private
     procedure NameEdit;
     procedure CreateToolsCtrls(AParent: TCustomControl);
@@ -377,7 +378,7 @@ begin
           dgMap.Canvas.Brush.Style := bsSolid;
           dgMap.Canvas.FillRect(aRect);      //delete block
         end;
-        1..$45:
+        1..$7f:
         begin
           if (cell <= $10) or ((cell >= $33) and (cell <= $35)) then
           begin
@@ -435,8 +436,31 @@ begin
       PlaceObject(Sender, GetShiftState);
     gtBindTrap:
       BindToTrap(Sender, GetShiftState);
+    gtPlacePly:
+      PlacePlayer(Sender);
   end;
   dgMap.Repaint;
+end;
+
+procedure TfMain.PlacePlayer(Sender: TObject);
+var
+  Col, Row: integer;
+  minCol: integer = 1;
+  currentValue: integer;
+  grid: TCustomGrid;
+  pos: TPoint;
+  maze: TGauntMaze;
+begin
+  grid := TCustomGrid(Sender);
+  // Get the cell coordinates from the mouse click
+  grid.MouseToCell(grid.ScreenToClient(Mouse.CursorPos).X,
+    grid.ScreenToClient(Mouse.CursorPos).Y, Col, Row);
+  if (Col > 0) and (Row > 0) then
+  begin
+    maze := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
+    maze.SetPlayerPos(Col - 1, Row - 1);
+  end;
+
 end;
 
 procedure TfMain.BindToTrap(Sender: TObject; shift: TShiftState);
@@ -546,12 +570,13 @@ procedure TfMain.aProcessMazeExecute(Sender: TObject);
 var
   processResult: integer;
 begin
-  processResult := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).ProcessMap;
+  processResult := TGauntMaze(tabsMain.GetTabData(
+    tabsMain.TabIndex).TabObject).ProcessMap;
   case processResult of
     -1: ShowMessage('The walls layer is too big!');
-    -2: ShowMessage ('The RLE layer is too big');
+    -2: ShowMessage('The RLE layer is too big');
     else
-        ShowMessage ('Map compiled successfully. Size: ' + intToStr(processResult));
+      ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
   end;
 end;
 
@@ -848,7 +873,7 @@ constructor TGauntToolBox.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   self.FTool := gtConstruct;
-  self.FObjectId := $12;
+  self.FObjectId := $13;
   self.FWallId := $10;
   self.FTrapBound := False;
 end;

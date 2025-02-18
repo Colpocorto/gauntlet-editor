@@ -20,12 +20,6 @@ type
     desc: string;
   end;
   TCustomGauntTraceCmd = class abstract (TObject);
-  //TCustomGauntItemCmd = class abstract(TObject);
-  {TGauntTraceOrigin = class(TCustomGauntTraceCmd)
-    col, row: smallint;
-    orgType: TGauntOrgType;
-  end;
-  }
 
   TGauntTrace = class(TCustomGauntTraceCmd)
     dir: TGauntTraceDir;
@@ -44,13 +38,14 @@ type
     FStyle: TGauntStyle;
     FBuffer: TMemoryStream;
     Fid: string;
+    FPlayerPos: TPoint;
     procedure InitMap(var map: TGauntMap);
     function ProcessTraceLayer: integer;
     function ProcessObjectLayer: integer;
     function FindTraces(Atype: TSearchTraceType): integer;
     function IsAWall(cell: byte): boolean;
     function IsAGate(cell: byte): boolean;
-    function IsADestructibleWall(cell: byte): boolean;
+    function IsATrapWall(cell: byte): boolean;
     function CountExits: integer;
     function IsLookedType(cell: byte; Atype: TSearchTraceType): boolean;
     function GetTraceOriginCode(AType: TSearchTraceType): byte;
@@ -58,6 +53,7 @@ type
     procedure PokeMapData(offset: integer; Value: byte);
     function CountConsecutiveSpaces(offset: integer): integer;
     function CountConsecutiveObjects(offset: integer; Data: byte): integer;
+    function AnyObjectsLeft(offset: integer): boolean;
   public
     MapData: TGauntMap;
     ItemData: TGauntMap;
@@ -80,6 +76,8 @@ type
     procedure InitVisitedData;
     procedure ToFileStream(fs: TFileStream);
     function ProcessMap: integer;
+    procedure SetPlayerPos(col: byte; row: byte);
+    function GetPlayerPos: TPoint;
 
   end;
 
@@ -173,6 +171,7 @@ const
     (id: $35 + 0 * STYLES_OFFSET; fileName: 'breakable_wall_0_1.png';
     desc: 'Destructible Wall Level 1'),
     (id: $36; fileName: 'exit.png'; desc: 'Exit door'),
+    (id: $3f; fileName: 'warrior.png'; desc: 'Player start position'),
 
     (id: $40; fileName: 'ghost.png'; desc: 'Ghost Level 1'),
     (id: $41; fileName: 'ghost.png'; desc: 'Ghost Level 2'),
@@ -354,6 +353,9 @@ begin
   self.FStunPlayers := False;
   self.FHurtPlayers := False;
   self.Fid := GetUUID();
+  self.FPlayerPos.X := 1;
+  self.FPlayerPos.Y := 1;
+  self.SetPlayerPos(1, 1);
 end;
 
 destructor TGauntMaze.Destroy;
@@ -361,6 +363,29 @@ begin
   //FTraceLayer.Free;
   self.FBuffer.Destroy;
   inherited Destroy;
+end;
+
+procedure TGauntMaze.SetPlayerPos(col: byte; row: byte);
+begin
+  //check if the new position is empty
+  if self.MapData[col, row] = 0 then
+  begin
+    //remove old position from the map
+    self.MapData[FPlayerPos.X, FPlayerPos.Y] := 0;
+
+    //update position as a property
+    self.FPlayerPos.X := col;
+    self.FPlayerPos.Y := row;
+
+    //update the map
+    self.MapData[col, row] := $3f;
+  end;
+end;
+
+function TGauntMaze.GetPlayerPos: TPoint;
+begin
+  Result.X := self.FPlayerPos.X;
+  Result.Y := 0;
 end;
 
 function TGauntMaze.ProcessMap: integer;
@@ -386,7 +411,7 @@ begin
   Result := ObjectLayerSize + TraceLayerSize + 4;
   //Set header bytes
   FBuffer.Seek(0, TSeekOrigin.soBeginning);
-  FBuffer.WriteByte((ObjectLayerSize + TraceLayerSize) and $ff);
+  FBuffer.WriteByte(Result and $ff);
   //bits 0-7 of size go here
   //process flags
   tmpbyte := 0;
@@ -396,7 +421,7 @@ begin
   if self.FHurtPlayers then tmpbyte := tmpbyte + $01;
   FBuffer.WriteByte(tmpbyte);
   //process Style and MSB of size
-  tmpbyte := ((ObjectLayerSize + TraceLayerSize) and $100) shr 1;
+  tmpbyte := (Result and $100) shr 1;
   tmpbyte := tmpbyte + (self.Style.id shl 3);
   FBuffer.WriteByte(tmpbyte);
   //process trace layer size
@@ -404,6 +429,26 @@ begin
 
   //TEMP, DELETE !!!!
   self.ToFileStream(TFileStream.Create('test.dat', fmCreate));
+end;
+
+function TGauntMaze.AnyObjectsLeft(offset: integer): boolean;
+var
+  d: byte;
+begin
+  while offset < (32 * 32) do
+  begin
+    d := PeekMapData(offset);
+    if not ((d = 0) or IsAWall(d) or IsATrapWall(d) or IsAGate(d)) then
+    begin
+      Result := True;
+      break;
+    end
+    else
+    begin
+      Result := False;
+      Inc(offset);
+    end;
+  end;
 end;
 
 function TGauntMaze.ProcessObjectLayer: integer;
@@ -418,24 +463,28 @@ begin
   repeat
     Data := self.PeekMapData(addr);
     case Data of
-      0..$12:
+      0..$12, $80..$92:
       begin
+        //first check if there are no objects left, in such case we can exit
+        if not self.AnyObjectsLeft(addr) then Exit;
+
         //count spaces;
         v := CountConsecutiveSpaces(addr);
         self.FBuffer.WriteByte($80 + v - 1);
         Result := Result + 1;
         //-1 is to adjust range to from 0-127 to 0-128 when it's parsed by the game
-
         addr := addr + v;
       end;
-      $13..$3f:
+      $13..$7f, $93..$ff:
       begin
         //there is at least one object here, and that's sure, so let's write it to the file
         self.FBuffer.WriteByte(Data);
+        Result := Result + 1;
         //now let's count how many if its kind there are ahead
         v := CountConsecutiveObjects(addr, Data);
-        if v>0 then self.FBuffer.WriteByte(v);
+        if v > 0 then self.FBuffer.WriteByte(v - 1);
         addr := addr + v + 1;
+        Result := Result + 1;
       end;
     end;
 
@@ -445,10 +494,9 @@ end;
 
 function TGauntMaze.CountConsecutiveObjects(offset: integer; Data: byte): integer;
 var
-  i: byte;
   Value: byte;
 const
-  MAX_OBJECTS = $12;
+  MAX_OBJECTS = $13;
 begin
   Value := Data;
   Result := 0;
@@ -464,7 +512,6 @@ end;
 
 function TGauntMaze.CountConsecutiveSpaces(offset: integer): integer;
 var
-  i: byte;
   Value: byte;
 const
   MAX_SPACES = 128;
@@ -493,7 +540,6 @@ begin
   if CountExits > 2 then
     //if there are only one or two exits it's better to use the object RLE encoding
     Result := Result + FindTraces(TSearchTraceType.sttExit);
-
 end;
 
 function TGauntMaze.FindTraces(Atype: TSearchTraceType): integer;
@@ -652,7 +698,7 @@ begin
     Result := False;
 end;
 
-function TGauntMaze.IsADestructibleWall(cell: byte): boolean;
+function TGauntMaze.IsATrapWall(cell: byte): boolean;
 begin
   if (cell >= $81) and (cell <= $90) then
     Result := True
@@ -666,7 +712,7 @@ begin
     TSearchTraceType.sttWall:
       Result := IsAWall(cell);
     TSearchTraceType.sttTrapWall:
-      Result := IsADestructibleWall(cell);
+      Result := IsATrapWall(cell);
     TSearchTraceType.sttGate:
       Result := IsAGate(cell);
     TSearchTraceType.sttExit:
@@ -790,6 +836,7 @@ begin
           ': ' + E.Message);
     end;
   end;
+  tmpPic.Destroy;
 end;
 
 procedure TGauntMaze.InitMap(var map: TGauntMap);

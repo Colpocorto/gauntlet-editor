@@ -23,3 +23,8 @@ Additionally, Linux building requires QT6 files to be distribuiteda as part of t
 * Preview based on WebMSX
 * Undo/Redo
 * Place character start point
+* Fix memory leaks
+* Space counting isn't taking into acount trap bound walls
+    * Create function to tell IsAnObject (encompassing any case that is empty space, wall, gate and their trap versions)
+* Fix size calculation
+* Copy and Paste regions between mazes or in a maze
