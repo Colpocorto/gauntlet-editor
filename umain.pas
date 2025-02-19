@@ -65,7 +65,6 @@ type
     ilMenu: TImageList;
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
-    timerMain: TTimer;
     procedure aGoEditNameExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
@@ -100,10 +99,11 @@ type
     procedure PlaceObject(Sender: TObject; shift: TShiftState);
     procedure BindToTrap(Sender: TObject; shift: TShiftState);
     procedure PlacePlayer(Sender: TObject);
+    procedure UpdateInfo(Sender: TObject);
   private
     procedure NameEdit;
+    procedure CreateInfoCtrls(AParent: TCustomControl);
     procedure CreateToolsCtrls(AParent: TCustomControl);
-
     procedure CreatePatternCtrls(AParent: TCustomControl);
     function ExpandPanelFactory(AContainer: TWinControl; AName: string;
       ACaption: string; AHeight: integer): TBCExpandPAnel;
@@ -128,7 +128,7 @@ type
     FObjectId: integer;
     FTrapBound: boolean;
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
     procedure SetTool(ATool: TGauntTool);
     function GetTool: TGauntTool;
     function SetWall(AWallId: integer): boolean;
@@ -169,7 +169,8 @@ begin
 
   //Create expandable panels
   CreateOptionPanels(self.scrollOptions);
-
+  //Info controls
+  CreateInfoCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo')));
   //Tool controls
   CreateToolsCtrls(BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expTools')));
   //temporarily remove the pointer button since it has no function yet
@@ -186,12 +187,8 @@ begin
   //Adjust dimensions
   dgMap.Width := dgMap.ColCount * dgMap.DefaultColWidth;
   dgMap.Height := dgMap.RowCount * dgMap.DefaultRowHeight;
-  self.Height := 16 + dgMap.Height;
+  self.Height := dgMap.Height + tabsMain.Height + cypanelMain.Height;
   hSplitter.Position := dgMap.Width + 32;
-
-  //start timer for graphics refreshing
-  //timerMain.Interval := 33;
-  //timerMain.Enabled := True;
 
 end;
 
@@ -402,9 +399,7 @@ begin
               TGraphicsDrawEffect.gdeHighlighted);
           end;
         end;
-
       end;
-
     end;
   end;
 end;
@@ -438,17 +433,49 @@ begin
       BindToTrap(Sender, GetShiftState);
     gtPlacePly:
       PlacePlayer(Sender);
+    gtGlass:
+      UpdateInfo(Sender);
   end;
   dgMap.Repaint;
+end;
+
+procedure TfMain.UpdateInfo(Sender: TObject);
+var
+  Col, Row: integer;
+  grid: TCustomGrid;
+  maze: TGauntMaze;
+  pattern: byte;
+  expPanel: TBCExpandPanel;
+  tmpStr: string;
+begin
+  grid := TCustomGrid(Sender);
+  // Get the cell coordinates from the mouse click
+  grid.MouseToCell(grid.ScreenToClient(Mouse.CursorPos).X,
+    grid.ScreenToClient(Mouse.CursorPos).Y, Col, Row);
+  if (Col > 0) and (Row > 0) and (Col < 33) and (Row < 33) then
+  begin
+    maze := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
+    pattern := maze.MapData[Col - 1, Row - 1];
+    expPanel := BCEPanelsOpt.Panel(BCEPanelsOpt.IdxOfPanel('expMazeInfo'));
+    TLabel(TPanel(expPanel.FindComponent('panelInfo')).FindComponent(
+      'lblXCoord')).Caption := IntToStr(Col - 1);
+    TLabel(TPanel(expPanel.FindComponent('panelInfo')).FindComponent(
+      'lblYCoord')).Caption := IntToStr(Row - 1);
+    tmpStr := patternIndex[PatternIndexMap[pattern and $7f]].desc;
+    if (pattern and $80) > 0 then tmpStr := tmpStr + ' (linked to traps)';
+    TLabel(TPanel(expPanel.FindComponent('panelInfo')).FindComponent(
+      'lblPattern')).Caption := tmpStr;
+
+    TImage(expPanel.FindComponent('imgInfo')).ImageIndex :=
+      patternIndexMap[pattern and $7f];
+
+  end;
 end;
 
 procedure TfMain.PlacePlayer(Sender: TObject);
 var
   Col, Row: integer;
-  minCol: integer = 1;
-  currentValue: integer;
   grid: TCustomGrid;
-  pos: TPoint;
   maze: TGauntMaze;
 begin
   grid := TCustomGrid(Sender);
@@ -460,7 +487,6 @@ begin
     maze := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
     maze.SetPlayerPos(Col - 1, Row - 1);
   end;
-
 end;
 
 procedure TfMain.BindToTrap(Sender: TObject; shift: TShiftState);
@@ -613,6 +639,161 @@ begin
       1, Row - 1] := index;
   end;
 
+end;
+
+procedure TfMain.CreateInfoCtrls(AParent: TCustomControl);
+var
+  tmpobj: TControl;
+  tmplabel: TLabel;
+begin
+  //   TBCExpandPanel(AParent).
+  //create properties panel
+  tmpobj := TPanel.Create(AParent);
+  with TPanel(tmpObj) do
+  begin
+    Align := alClient;
+    Color := $282828;
+    BevelColor := $383838;
+    Height := 280;
+    Parent := AParent;
+    Name := 'panelInfo';
+    Caption := '';
+  end;
+
+  //create labels
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Font.Color := $c9c9c9;
+    Alignment := taRightJustify;
+    Caption := 'X coord:';
+    Parent := TPanel(tmpObj);
+    Top := 50;
+    Width := 70;
+    Left := 0;
+  end;
+  //create labels
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Font.Color := $f0f0f0;
+    Font.Style := [fsBold];
+    Alignment := taLeftJustify;
+    Name := 'lblXCoord';
+    Caption := '1';
+    Parent := TPanel(tmpObj);
+    Top := 50;
+    Width := 70;
+    Left := 78;
+  end;
+
+
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Font.Color := $c9c9c9;
+    Alignment := taRightJustify;
+    Caption := 'Y coord:';
+    Parent := TPanel(tmpObj);
+    Top := 70;
+    Width := 70;
+    Left := 0;
+  end;
+  //create labels
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Font.Color := $f0f0f0;
+    Font.Style := [fsBold];
+    Alignment := taLeftJustify;
+    Name := 'lblYCoord';
+    Caption := '1';
+    Parent := TPanel(tmpObj);
+    Top := 70;
+    Width := 70;
+    Left := 78;
+  end;
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Font.Color := $c9c9c9;
+    Alignment := taRightJustify;
+    Caption := 'Pattern description:';
+    Height := 60;
+    Width := 70;
+    WordWrap := True;
+    Parent := TPanel(tmpObj);
+    Top := 98;
+    Left := 0;
+  end;
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := True;
+    Align := alBottom;
+    Anchors := [akBottom];
+    Font.Color := $e9e9e9;
+    Font.Style := [fsBold];
+    Alignment := taCenter;
+    Name := 'lblPattern';
+    Caption := 'Player start position';
+    Height := 60;
+    Width := 70;
+    WordWrap := True;
+    Parent := TPanel(tmpObj);
+    Top := 110;
+    Left := 0;
+  end;
+  //create zoom picture
+  tmpobj := TImage.Create(AParent);
+  with TImage(tmpobj) do
+  begin
+    Color := clBlue;
+    Width := 128;
+    ImageWidth := 128;
+    Height := tmpobj.Width;
+    Align := alRight;
+    Parent := AParent;
+    Name := 'imgInfo';
+    Images := uData.ilMap;
+    ImageIndex := patternIndexMap[$3f];
+    //    Picture.LoadFromFile('resources/treasure.png');
+  end;
+
+  //create hint panel
+  tmpobj := TPanel.Create(AParent);
+  with TPanel(tmpObj) do
+  begin
+    Align := alBottom;
+    BevelColor := clBlack;
+    Height := 38;
+    Autosize := False;
+    Parent := AParent;
+    Name := 'panelHint';
+    Caption := '';
+  end;
+  tmplabel := TLabel.Create(tmpObj);
+  with tmplabel do
+  begin
+    Autosize := False;
+    Align := alBottom;
+    Anchors := [akBottom, akLeft, akRight];
+    Font.Color := $c9c9c9;
+    Font.Style := [fsItalic];
+    Alignment := taLeftJustify;
+    Height := 36;
+    //Width := 40;
+    WordWrap := True;
+    Parent := TPanel(tmpObj);
+    Top := 0;
+    Left := 0;
+    Caption := 'HINT: click + CTRL when using the building or object tool to erase a cell.';
+  end;
 end;
 
 procedure TfMain.CreateToolsCtrls(AParent: TCustomControl);
@@ -820,6 +1001,9 @@ begin
     Width := AContainer.ClientWidth;
     OnResize := @ExpandPanelResize;
   end;
+
+  tmppic.Destroy;
+
 end;
 
 procedure TfMain.ExpandPanelResize(Sender: TObject);

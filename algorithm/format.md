@@ -191,7 +191,7 @@ Available commands for wall drawing:
 Possible commands for block definition:
 
 * Advance MAZE_BUF cursor. MSB + -1 + number of positions to advance (lineary). (the counter is increased by one to adjust the range to 1-128)
-* Iter      #nn    repeat the former object #nn times (N<=#12>).
+* Iter      #nn    repeat the former object #nn times (N<=#12>), N=0 -> 1 times
 * Object.   #NN    object number (from list [PATTERN LIST], N>#12). Cursor is advanced to the next position.   
 * Charpos.  #3F    character position? CHECK   00111111
 * Enemy.    #40+   enemy. Bits 543 are the number of enemy:

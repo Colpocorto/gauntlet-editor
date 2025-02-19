@@ -1,7 +1,7 @@
 object fMain: TfMain
   Left = 350
   Height = 679
-  Top = 250
+  Top = 32
   Width = 1200
   Caption = 'fMain'
   ClientHeight = 679
@@ -593,13 +593,6 @@ object fMain: TfMain
       Caption = 'Verify Maze'
       OnExecute = aProcessMazeExecute
     end
-  end
-  object timerMain: TTimer
-    Enabled = False
-    Interval = 16
-    OnTimer = timerMainTimer
-    Left = 232
-    Top = 174
   end
   object BCEPanelsOpt: TBCExpandPanels
     ArrangeKind = akTop
