@@ -6,12 +6,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
-  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, Types,
-  uData, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns, Buttons,
-  StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
-  BCExpandPanels, BGRATheme, attabs, BGRABitmap,
-  BGRACustomDrawn, BCComboBox, BGRAGradientScanner,
-  BGRABitmapTypes, GraphType, ImgList;
+  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, Types, uData,
+  BufDataset, DB, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
+  Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
+  BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRACustomDrawn, BCComboBox,
+  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList;
 
 type
 
@@ -77,6 +76,7 @@ type
     procedure aStyleExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure tabsMainTabEmpty(Sender: TObject);
     procedure ToolButtonClick(Sender: TObject);
     procedure PatternButtonClick(Sender: TObject);
     procedure leNameDblClick(Sender: TObject);
@@ -189,7 +189,6 @@ begin
   dgMap.Height := dgMap.RowCount * dgMap.DefaultRowHeight;
   self.Height := dgMap.Height + tabsMain.Height + cypanelMain.Height;
   hSplitter.Position := dgMap.Width + 32;
-
 end;
 
 function TfMain.AddNewMaze: integer;
@@ -198,12 +197,14 @@ var
 begin
   tab1 := TATTabData.Create(nil);
   tab1.TabCaption := 'New Maze ' + IntToStr(tabsMain.TabCount + 1);
-  tab1.TabObject := TGauntMaze.Create;
+  tab1.TabObject := TGauntMaze.Create(self);
   TGauntMaze(tab1.TabObject).Name := tab1.TabCaption;
   tabsMain.AddTab(tabsMain.TabCount, tab1);
   tabsMain.ShowTab(tabsMain.TabCount - 1);
   tabsMain.TabIndex := tabsMain.TabCount - 1;
   Result := tabsMain.TabCount;
+  tabsMain.GetTabData(tabsMain.TabIndex).TabModified := True;
+  dgMap.Enabled := True;
 end;
 
 procedure TfMain.CreateOptionPanels(AContainer: TWinControl);
@@ -230,6 +231,11 @@ begin
   hSplitter.Width := self.ClientWidth;
 
   // hSplitterLeft.Width:=self.ClientWidth-hSplitterLeft.Left;
+end;
+
+procedure TfMain.tabsMainTabEmpty(Sender: TObject);
+begin
+  dgMap.Enabled := False;
 end;
 
 procedure TfMain.leNameDblClick(Sender: TObject);
@@ -339,6 +345,7 @@ begin
   dgMap.Canvas.Brush.Color := $d08010;
   dgMap.Canvas.Font.Color := clWhite;
 
+  if tabsMain.TabCount = 0 then Exit;
   if ((aCol = 0) or (aCol = dgMap.ColCount - 1)) and (aRow <> 0) and
     (aRow <> dgMap.RowCount - 1) then
   begin
@@ -510,13 +517,12 @@ begin
     //update map matrix
     currentValue := TGauntMaze(tabsMain.GetTabData(
       tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
-
-    if (currentValue < $80) then
+    if not (currentValue in [$2f, $3f, $36]) then
+      //if cell contains the player, a trap or an exit, do nothing
+    begin
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
-        1, Row - 1] := currentValue or $80
-    else
-      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
-        1, Row - 1] := currentValue and $7f;
+        1, Row - 1] := currentValue xor $80;
+    end;
   end;
 
 end;
@@ -601,6 +607,7 @@ begin
   case processResult of
     -1: ShowMessage('The walls layer is too big!');
     -2: ShowMessage('The RLE layer is too big');
+    -3: ShowMessage('There is no EXIT');
     else
       ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
   end;
@@ -1002,7 +1009,7 @@ begin
     OnResize := @ExpandPanelResize;
   end;
 
-  tmppic.Destroy;
+  tmppic.Free;
 
 end;
 

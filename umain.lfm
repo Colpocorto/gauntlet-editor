@@ -8,6 +8,7 @@ object fMain: TfMain
   ClientWidth = 1200
   Color = 3881787
   Font.Color = 15263976
+  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
   OnResize = FormResize
   object hSplitter: TPairSplitter
@@ -76,6 +77,7 @@ object fMain: TfMain
         ColorBorderPassive = 4342338
         ColorTabActive = 4144959
         ColorTabPassive = 2039583
+        ColorFontModified = 14211288
         OptButtonLayout = '<>,v'
         OptSpaceSide = 0
         OptSpaceBetweenTabs = 2
@@ -95,6 +97,7 @@ object fMain: TfMain
         OptHintForUser4 = '4'
         OnTabChanged = tabsMainTabChanged
         OnTabPlusClick = tabsMainTabPlusClick
+        OnTabEmpty = tabsMainTabEmpty
       end
     end
     object hSplitterRight: TPairSplitterSide

@@ -10,21 +10,25 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, runtimetypeinfocontrols, LazLogger, lazcontrols, uMain,
-  uData
-  { you can add units after this };
+  Forms,
+  runtimetypeinfocontrols,
+  LazLogger,
+  lazcontrols,
+  uMain,
+  uData { you can add units after this };
 
-{$R *.res}
+  {$R *.res}
 
 begin
-  RequireDerivedFormResource:=True;
-  Application.Scaled:=True;
-  {$PUSH}{$WARN 5044 OFF}
-  Application.MainFormOnTaskbar:=True;
+  RequireDerivedFormResource := True;
+  Application.Scaled := True;
+  {$PUSH}
+  {$WARN 5044 OFF}
+  Application.MainFormOnTaskbar := True;
   {$POP}
   Application.Initialize;
   uData.InitData;
   Application.CreateForm(TfMain, fMain);
   Application.Run;
+  uData.CleanData;
 end.
-

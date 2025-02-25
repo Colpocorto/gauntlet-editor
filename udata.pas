@@ -5,14 +5,15 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, Controls, Graphics, LazLoggerBase;
+  Classes, SysUtils, Controls, Graphics, LazLoggerBase,
+  SQLite3Conn, sqldb;
 
 type
   TGauntMap = array[0..31, 0..31] of byte;
   TLayer = (background, objects, positions);
-  //TGauntOrgType = (wall, trap_bound_wall, gate_h, gate_v, exit);
   TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
   TSearchTraceType = (sttWall, sttTrapWall, sttGate, sttExit);
+  TGauntVersion = (gvDSK, gvROM, gvCAS, gvTSX);
 
   TGauntStyle = record
     id: integer;
@@ -26,7 +27,7 @@ type
     steps: smallint;
   end;
 
-  TGauntMaze = class(TPersistent)
+  TGauntMaze = class(TComponent)
   private
     FSize: integer;  //0-511
     FHorzWrap: boolean;
@@ -38,6 +39,8 @@ type
     FStyle: TGauntStyle;
     FBuffer: TMemoryStream;
     Fid: string;
+    FCreationDate: TDateTime;
+    FLastSavedDate: TDateTime;
     FPlayerPos: TPoint;
     procedure InitMap(var map: TGauntMap);
     function ProcessTraceLayer: integer;
@@ -58,7 +61,7 @@ type
     MapData: TGauntMap;
     ItemData: TGauntMap;
 
-    constructor Create;
+    constructor Create(AOwner: TComponent);
     destructor Destroy; override;
     function getItemsLayersize(): integer;
     property Name: string read FName write FName;
@@ -66,6 +69,8 @@ type
     property HurtPlayers: boolean read FHurtPlayers write FHurtPlayers;
     property Style: TGauntStyle read FStyle write FStyle;
     property id: string read Fid write Fid;
+    property CreationDate: TDateTime read FCreationDate write FCreationDate;
+    property LastSavedDate: TDateTime read FLastSavedDate write FLastSavedDate;
     function getSize: integer;
     procedure SetHorzWrap(w: boolean);
     procedure SetVertWrap(w: boolean);
@@ -75,6 +80,10 @@ type
     procedure InitItemData;
     procedure InitVisitedData;
     procedure ToFileStream(fs: TFileStream);
+    procedure FromFileStream(fs: TFileStream);
+
+    procedure ExportToFileStream(fs: TFileStream);
+
     function ProcessMap: integer;
     procedure SetPlayerPos(col: byte; row: byte);
     function GetPlayerPos: TPoint;
@@ -86,11 +95,14 @@ type
     fileName: string;
     desc: string;
   end;
+  TGauntBlock = array[0..9] of TGauntMaze;
 
 const
   MAX_TRACE_SIZE = 255;
   MAX_ITEM_SIZE = (512 - 4 - MAX_TRACE_SIZE);
   RESOURCES_DIR = 'resources/';
+  DATABASE_FILENAME = 'gauntedit.sqlite3';
+  APPDATA_DIR = '.gauntlet_editor/';
   STYLES_OFFSET = $100;    //because of the trap-bind bit a set can reach $B6
   TRAP_OFFSET = $80;
   gauntStyles: array[0..7] of TGauntStyle = (
@@ -324,25 +336,43 @@ const
     (id: $35 + 7 * STYLES_OFFSET; fileName: 'breakable_wall_7_1.png'; desc: '')
     );
 
+  HEAD_DSK: array[0..160] of byte = (
+    $FD, $7E, $4E, $FE, $80, $20, $13, $FD, $77, $4D, $FD, $36, $4E, $C0, $21, $B8,
+    $D0, $11, $00, $C8, $01, $00, $08, $ED, $B0, $C9, $0E, $FF, $11, $FF, $FF, $CD,
+    $78, $D0, $4F, $FD, $CB, $FF, $76, $28, $06, $CD, $87, $D0, $4F, $18, $0C, $FD,
+    $7E, $3B, $FE, $04, $30, $05, $CD, $87, $D0, $18, $03, $CD, $78, $D0, $57, $CD,
+    $78, $D0, $5F, $CD, $78, $D0, $ED, $53, $B6, $D0, $32, $B5, $D0, $79, $32, $6C,
+    $D0, $11, $00, $C8, $DD, $21, $B5, $D0, $06, $03, $DD, $7E, $00, $DD, $23, $C5,
+    $D5, $CD, $8F, $D0, $EB, $D1, $ED, $B0, $C1, $10, $EF, $3E, $00, $CD, $8F, $D0,
+    $D5, $DD, $E1, $FD, $36, $4D, $07, $C9, $CD, $00, $85, $E6, $07, $BB, $28, $F8,
+    $BA, $28, $F5, $B9, $28, $F2, $C9, $CD, $00, $85, $E6, $01, $C6, $08, $C9, $11,
+    $B8, $D0, $21, $A1, $D0, $3C, $4E, $23, $46, $23, $3D, $C8, $EB, $09, $EB, $18,
+    $F5
+    );
+
 var
   ilMap: TImageList;
   ilTools: TImageList;
   resourcesDir: string;
   patternIndexMap: array of integer;
-
-
+  transaction: TSQLTransaction;
+  dbConn: TSQLite3Connection;
+  HomeDir: string;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
+procedure CleanData;
 procedure GauntDebugLn(ATextLine: string);
 function GetUUID: string;
 function FindPatternDataById(APatternID: integer): TPictureIndex;
+function ImportBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
+procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
 
 implementation
 
-constructor TGauntMaze.Create;
+constructor TGauntMaze.Create(AOwner: TComponent);
 begin
-  inherited Create;
+  inherited Create(AOwner);
   //FTraceLayer := TList.Create;
   self.FBuffer := TMemoryStream.Create;
   self.InitVisitedData;
@@ -352,7 +382,9 @@ begin
   self.FVertWrap := False;
   self.FStunPlayers := False;
   self.FHurtPlayers := False;
-  self.Fid := GetUUID();
+  self.Fid := GetUUID;
+  self.FCreationDate := now;
+  self.FLastSavedDate := now;
   self.FPlayerPos.X := 1;
   self.FPlayerPos.Y := 1;
   self.SetPlayerPos(1, 1);
@@ -361,7 +393,7 @@ end;
 destructor TGauntMaze.Destroy;
 begin
   //FTraceLayer.Free;
-  self.FBuffer.Destroy;
+  self.FBuffer.Free;
   inherited Destroy;
 end;
 
@@ -393,8 +425,16 @@ var
   TraceLayerSize: integer;
   ObjectLayerSize: integer;
   tmpbyte: byte;
+  block: TGauntBlock;      //TEMP DELETE!!!
+  fsExport: TFileStream;
+  fsSave: TFileStream;
+  fsExportBlock: TFileStream;
 begin
-  Result := 0;
+  if CountExits < 1 then
+  begin
+    Result := -3;
+    Exit;
+  end;
   TraceLayerSize := ProcessTraceLayer;
   if TraceLayerSize > 255 then
   begin
@@ -426,9 +466,29 @@ begin
   FBuffer.WriteByte(tmpbyte);
   //process trace layer size
   FBuffer.WriteByte(TraceLayerSize);
+  self.FSize := Result;
 
   //TEMP, DELETE !!!!
-  self.ToFileStream(TFileStream.Create('test.dat', fmCreate));
+  fsExport := TFileStream.Create('test.dat', fmCreate);
+  self.ExportToFileStream(fsExport);
+  fsSave := TFileStream.Create('test.obj', fmCreate);
+  self.ToFileStream(fsSave);
+  block[0] := self;
+  block[1] := self;
+  block[2] := self;
+  block[3] := self;
+  block[4] := self;
+  block[5] := self;
+  block[6] := self;
+  block[7] := self;
+  block[8] := self;
+  block[9] := self;
+  fsExportBlock := TFileStream.Create('MAZE01', fmCreate);
+  uData.ExportBlock(fsExportBlock, block, gvDSK);
+  fsExport.Free;
+  fsSave.Free;
+  //fsExportBlock.Free;
+
 end;
 
 function TGauntMaze.AnyObjectsLeft(offset: integer): boolean;
@@ -482,9 +542,12 @@ begin
         Result := Result + 1;
         //now let's count how many if its kind there are ahead
         v := CountConsecutiveObjects(addr, Data);
-        if v > 0 then self.FBuffer.WriteByte(v - 1);
+        if v > 0 then
+        begin
+          self.FBuffer.WriteByte(v - 1);
+          Result := Result + 1;
+        end;
         addr := addr + v + 1;
-        Result := Result + 1;
       end;
     end;
 
@@ -522,7 +585,7 @@ begin
   while (Result < MAX_SPACES) and (offset < (32 * 32)) and (Value < $12) do
   begin
     Value := PeekMapData(offset);
-    if Value <= $12 then Result := Result + 1;
+    if (Value <= $12) or ((Value >= $80) and (Value <= $92)) then Result := Result + 1;
     offset := offset + 1;
   end;
 
@@ -635,8 +698,9 @@ begin
             begin
               searchingCol := CurrentCol + SearchDirs[BestDir].colInc * i;
               searchingRow := CurrentRow + SearchDirs[BestDir].rowInc * i;
-              FVisitedData[searchingCol, searchingRow] := 1;
-              //CHECK this might write outbounds the array
+              if (searchingCol < 32) and (searchingRow < 32) then
+                FVisitedData[searchingCol, searchingRow] := 1;
+              //CHECK this might write outbounds the array   (checked)
             end;
             //add it to the sequence
             setLength(Seq.strokes, length(Seq.strokes) + 1);
@@ -798,9 +862,52 @@ end;
 
 procedure InitData;
 begin
+  //Get directories
+  HomeDir := IncludeTrailingPathDelimiter(GetUserdir);
+  if not DirectoryExists(HomeDir + APPDATA_DIR, True) then
+    CreateDir(HomeDir + APPDATA_DIR);
 
   resourcesDir := ExtractFilePath(ParamStr(0)) + RESOURCES_DIR;
 
+  //Initialize database stuff
+  transaction := TSQLTransaction.Create(nil);
+  dbConn := TSQLite3Connection.Create(nil);
+  dbConn.Transaction := transaction;
+  dbConn.DatabaseName := HomeDir + APPDATA_DIR + DATABASE_FILENAME;
+  dbConn.CreateDB;
+  dbConn.Open;
+  //Create tables if don't exist
+  if dbConn.Connected then
+  begin
+    debugln('Creating table MAZES.');
+    try
+      dbConn.ExecuteDirect(
+        'CREATE TABLE IF NOT EXISTS MAZES (UUID TEXT PRIMARY KEY, Name TEXT, Style INTEGER, H_wrap INTEGER, V_wrap INTEGER, can_stun INTEGER, can_hurt INTEGER, created TEXT, modified TEXT, map_data TEXT)');
+      dbConn.ExecuteDirect(
+        'CREATE TABLE IF NOT EXISTS BLOCKS (ID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, created TEXT, modified TEXT, slot_0 TEXT, slot_1 TEXT, slot_2 TEXT, slot_3 TEXT, slot_4 TEXT, slot_5 TEXT, slot_6 TEXT, slot_7 TEXT)');
+      dbConn.ExecuteDirect(
+        'CREATE TABLE IF NOT EXISTS COLLECTIONS (ID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, created TEXT, modified TEXT)');
+      dbConn.ExecuteDirect(
+        'CREATE TABLE IF NOT EXISTS COL_BLOCKS (ID INTEGER PRIMARY KEY AUTOINCREMENT, block_id INTEGER, collection_id INTEGER, FOREIGN KEY(block_id) REFERENCES BLOCKS(ID), FOREIGN KEY(collection_id) REFERENCES COLLECTIONS(ID))');
+      transaction.Commit;
+    except
+      on E: Exception do
+        debugln('Error: ', E.message);
+    end;
+  end
+  else
+  begin
+    debugln('There was a problem creating or opening the persistence layer.');
+  end;
+
+end;
+
+procedure CleanData;
+begin
+  patternIndex := [];
+  dbConn.Close(True);
+  dbConn.Free;
+  transaction.Free;
 end;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
@@ -836,7 +943,7 @@ begin
           ': ' + E.Message);
     end;
   end;
-  tmpPic.Destroy;
+  tmpPic.Free;
 end;
 
 procedure TGauntMaze.InitMap(var map: TGauntMap);
@@ -879,7 +986,7 @@ begin
   self.InitMap(self.FVisitedData);
 end;
 
-procedure TGauntMaze.ToFileStream(fs: TFileStream);
+procedure TGauntMaze.ExportToFileStream(fs: TFileStream);
 var
   i: integer;
 begin
@@ -893,12 +1000,64 @@ begin
     begin
       fs.WriteByte(FBuffer.ReadByte);
     end;
-    fs.Destroy;
+
+  except
+    on E: Exception do GauntDebugLn('Error exporting maze ' + self.Name +
+        ' to file ' + fs.FileName + ': ' + E.Message);
+  end;
+  //fs.Free;
+end;
+
+procedure TGauntMaze.ToFileStream(fs: TFileStream);
+var
+  i: integer;
+begin
+
+  //set the target file to append data
+  fs.Seek(0, TSeekOrigin.soEnd);
+  try
+    fs.WriteAnsiString(self.Name);
+    fs.WriteByte(self.GetPlayerPos.X);
+    fs.WriteByte(self.GetPlayerPos.Y);
+    fs.WriteByte(Ord(self.FHorzWrap));
+    fs.WriteByte(Ord(self.FVertWrap));
+    fs.WriteByte(Ord(self.FHurtPlayers));
+    fs.WriteByte(Ord(self.FStunPlayers));
+    fs.WriteByte(self.FStyle.id);
+    for i := 0 to 32 * 32 - 1 do
+    begin
+      fs.WriteByte(self.PeekMapData(i));
+    end;
   except
     on E: Exception do GauntDebugLn('Error saving maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);
   end;
+  //fs.Free;
+end;
 
+procedure TGauntMaze.FromFileStream(fs: TFileStream);
+var
+  i: integer;
+begin
+
+  try
+    self.Name := fs.ReadAnsiString;
+    self.FPlayerPos.X := fs.ReadByte;
+    self.FPlayerPos.Y := fs.ReadByte;
+    self.FHorzWrap := fs.ReadByte <> 0;
+    self.FVertWrap := fs.ReadByte <> 0;
+    self.FHurtPlayers := fs.ReadByte <> 0;
+    self.FStunPlayers := fs.ReadByte <> 0;
+    self.FStyle := gauntStyles[fs.ReadByte];
+    for i := 0 to 32 * 32 - 1 do
+    begin
+      self.PokeMapData(i, fs.ReadByte);
+    end;
+  except
+    on E: Exception do GauntDebugLn('Error loading maze ' + self.Name +
+        ' to file ' + fs.FileName + ': ' + E.Message);
+  end;
+  fs.Free;
 end;
 
 procedure GauntDebugLn(ATextLine: string);
@@ -928,6 +1087,75 @@ begin
       Result := patternIndex[i];
       break;
     end;
+end;
+
+function ImportBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
+begin
+  Result[0] := nil;
+end;
+
+procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+
+  procedure writeBinHeader(fs: TFileStream);
+  begin
+    //write BSAVE header
+    fs.WriteByte($fe);
+    fs.WriteWord($d000);
+    fs.WriteWord($de80);
+    fs.WriteWord($d000);
+  end;
+
+  procedure writeBlockHeader(AHeader: array of byte; fs: TFileStream);
+  var
+    i: integer;
+  begin
+    for i := 0 to length(AHeader) - 1 do
+    begin
+      fs.WriteByte(AHeader[i]);
+    end;
+  end;
+
+var
+  i: integer;
+begin
+  try
+    case AType of
+      gvDSK:
+      begin
+        //write header
+        writeBinHeader(fs);
+        writeBlockHeader(HEAD_DSK, fs);
+      end;
+      else
+      begin
+
+      end;
+    end;
+    //common structure goes here
+
+    //table of sizes
+    for i := 0 to length(ABlock) - 1 do
+    begin
+      fs.WriteWord(word(ABlock[i].FSize));
+    end;
+    // random selection variables (3 dummy bytes)
+
+    fs.WriteByte(0);
+    fs.WriteByte(0);
+    fs.WriteByte(0);
+
+
+    for i := 0 to length(ABlock) - 1 do
+    begin
+      ABlock[i].ExportToFileStream(fs);
+    end;
+  except
+    on E: Exception do
+    begin
+      GauntDebugLn('Error writing maze to file ' + fs.FileName + ': ' + E.Message);
+    end;
+  end;
+  fs.Free;
 end;
 
 end.
