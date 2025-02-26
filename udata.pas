@@ -626,13 +626,13 @@ type
 const
   SearchDirs: array [0..7] of TSearchDir = (
     (colInc: 0; rowInc: -1; byteCode: $00),              //UP
-    (colInc: -1; rowInc: -1; byteCode: $20),             //UP-LEFT
+    (colInc: 1; rowInc: -1; byteCode: $20),             //UP-RIGHT
     (colInc: 1; rowInc: 0; byteCode: $40),               //RIGHT
     (colInc: 1; rowInc: 1; byteCode: $60),               //DOWN-RIGHT
     (colInc: 0; rowInc: 1; byteCode: $80),               //DOWN
     (colInc: -1; rowInc: 1; byteCode: $a0),              //DOWN-LEFT
     (colInc: -1; rowInc: 0; byteCode: $c0),              //LEFT
-    (colInc: 1; rowInc: -1; byteCode: $e0)               //UP-RIGHT
+    (colInc: -1; rowInc: -1; byteCode: $e0)               //UP-LEFT
     );
 var
   row, col: integer;
@@ -723,7 +723,7 @@ begin
 
         for i := 0 to length(Seq.strokes) - 1 do
         begin
-          self.FBuffer.WriteByte(Seq.strokes[i].dir.byteCode + Seq.strokes[i].steps
+          self.FBuffer.WriteByte(Seq.strokes[i].dir.byteCode + Seq.strokes[i].steps-1
             );
           Result := Result + 1;
         end;

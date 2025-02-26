@@ -639,7 +639,9 @@ begin
   else
     minCol := 1;
 
-  if (Col > minCol) and (Col < 33) and (Row > 1) and (Row < 33) then
+  if (Col > minCol) and (Col < 33) and (Row > 1) and (Row < 33) and
+    (TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
+    1, Row - 1] <> $3f) then
   begin
     //update map matrix
     TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
