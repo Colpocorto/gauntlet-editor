@@ -740,7 +740,7 @@ begin
       Result := $c0;
     sttGate:
       Result := $40;
-    //needs to be convered to $80 somewhere if the first gate of the sequence is verticalk
+    //needs to be convered to $80 somewhere if the first gate of the sequence is vertical
     sttExit:
       Result := $20;
   end;

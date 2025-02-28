@@ -19,8 +19,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uMain"/>
-        <TopLine Value="660"/>
-        <CursorPos X="38" Y="646"/>
+        <TopLine Value="600"/>
+        <CursorPos X="84" Y="615"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -31,8 +31,8 @@
         <UnitName Value="uData"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
-        <TopLine Value="617"/>
-        <CursorPos X="15" Y="635"/>
+        <TopLine Value="723"/>
+        <CursorPos X="34" Y="743"/>
         <FoldState Value=" TCHG41N"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
@@ -42,13 +42,13 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="1325"/>
         <CursorPos X="27" Y="1339"/>
-        <UsageCount Value="39"/>
+        <UsageCount Value="28"/>
       </Unit>
       <Unit>
         <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\ATFlatControls\atflatcontrols\attabs.pas"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="3694"/>
-        <CursorPos Y="3681"/>
+        <TopLine Value="1288"/>
+        <CursorPos Y="1310"/>
         <UsageCount Value="107"/>
         <Loaded Value="True"/>
       </Unit>
@@ -56,122 +56,122 @@
     <JumpHistory HistoryIndex="29">
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="935" Column="26" TopLine="907"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret TopLine="109"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="99" Column="26" TopLine="84"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="438" Column="18" TopLine="422"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="534" Column="8" TopLine="546"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="101" Column="24" TopLine="75"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="442" Column="16" TopLine="415"/>
+        <Caret Line="655" TopLine="639"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1062" TopLine="1060"/>
+        <Caret Line="654" TopLine="639"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="88" Column="27" TopLine="73"/>
+        <Caret Line="655" TopLine="639"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="661" TopLine="642"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="663" TopLine="642"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="664" TopLine="642"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="665" TopLine="642"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="666" TopLine="642"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="669" TopLine="646"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="670" TopLine="646"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="54" Column="56" TopLine="47"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="600" Column="49" TopLine="576"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="601" Column="49" TopLine="576"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="602" Column="23" TopLine="581"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="15" Column="52"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="602" Column="57" TopLine="574"/>
       </Position>
       <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="482" Column="27" TopLine="488"/>
+        <Caret Line="621" Column="54" TopLine="606"/>
       </Position>
       <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="4" Column="30"/>
+        <Caret Line="95" Column="24" TopLine="80"/>
       </Position>
       <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="90" Column="24" TopLine="64"/>
+        <Caret Line="171" Column="13" TopLine="156"/>
       </Position>
       <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="534" Column="14" TopLine="513"/>
+        <Caret Line="197" Column="27" TopLine="186"/>
       </Position>
       <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="538" Column="14" TopLine="513"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="547" Column="16" TopLine="520"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="552" Column="18" TopLine="525"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="556" Column="18" TopLine="529"/>
+        <Caret Line="615" Column="84" TopLine="600"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="410" Column="49" TopLine="397"/>
+        <Caret Line="601" TopLine="584"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="600" Column="31" TopLine="603"/>
+        <Caret Line="602" TopLine="584"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="601" Column="31" TopLine="584"/>
+        <Caret Line="717" Column="106" TopLine="685"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="602" Column="31" TopLine="584"/>
+        <Caret Line="485" Column="26" TopLine="532"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="605" Column="33" TopLine="584"/>
+        <Caret Line="526" Column="18" TopLine="509"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="726" Column="86" TopLine="690"/>
+        <Caret Line="533" Column="35" TopLine="519"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="738" Column="20" TopLine="525"/>
+        <Caret Line="588" Column="40" TopLine="569"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="48" Column="23" TopLine="33"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="600" Column="31" TopLine="572"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="601" Column="31" TopLine="573"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="602" Column="31" TopLine="574"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="605" Column="33" TopLine="577"/>
+        <Caret Line="632" Column="41" TopLine="604"/>
       </Position>
     </JumpHistory>
     <RunParams>

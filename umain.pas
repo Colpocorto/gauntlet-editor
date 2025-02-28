@@ -17,6 +17,7 @@ type
   { TfMain }
 
   TfMain = class(TForm)
+    aLoadImport: TAction;
     aProcessMaze: TAction;
     aSaveExport: TAction;
     aGoEditName: TAction;
@@ -30,6 +31,7 @@ type
     aStyle1: TAction;
     alMain: TActionList;
     appProp: TApplicationProperties;
+    btnLoadImport: TSpeedButton;
     btnStyle1: TSpeedButton;
     bvSpacer3: TcyBevel;
     cbDamage: TBCComboBox;
@@ -65,6 +67,7 @@ type
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
     procedure aGoEditNameExecute(Sender: TObject);
+    procedure aLoadImportExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
     procedure cbWrapHClick(Sender: TObject);
@@ -202,7 +205,7 @@ begin
   tabsMain.AddTab(tabsMain.TabCount, tab1);
   tabsMain.ShowTab(tabsMain.TabCount - 1);
   tabsMain.TabIndex := tabsMain.TabCount - 1;
-  Result := tabsMain.TabCount;
+  Result := tabsMain.TabCount - 1;
   tabsMain.GetTabData(tabsMain.TabIndex).TabModified := True;
   dgMap.Enabled := True;
 end;
@@ -596,6 +599,23 @@ procedure TfMain.aGoEditNameExecute(Sender: TObject);
 begin
   self.leName.ReadOnly := False;
   self.leName.Color := $5f5f5f;
+end;
+
+procedure TfMain.aLoadImportExecute(Sender: TObject);
+var
+  od: TOpenDialog;
+begin
+  od := TOpenDialog.Create(btnLoadImport);
+//  od.Options := (TOpenOptions..ofFileMustExist);
+  if od.Execute then
+  begin
+    TGauntMaze(tabsMain.GetTabData(self.AddNewMaze).TabObject).FromFileStream(
+      TFileStream.Create(od.FileName, fmOpenRead));
+     tabsMain.GetTabData(tabsMain.TabIndex).TabCaption := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+     leName.Text:=TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+    dgMap.Repaint;
+  end;
+
 end;
 
 procedure TfMain.aProcessMazeExecute(Sender: TObject);
@@ -1159,7 +1179,7 @@ begin
   if GetKeyState(VK_MENU) < 0 then
     Include(Result, ssAlt);
 
-  // Check if Left button is pressed
+  // Check if btnLoadImport button is pressed
   if GetKeyState(VK_LBUTTON) < 0 then
     Include(Result, ssLeft);
 
