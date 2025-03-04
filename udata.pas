@@ -431,6 +431,10 @@ var
   fsSave: TFileStream;
   fsExportBlock: TFileStream;
 begin
+  //Reset the TMemoryStream
+  FBuffer.Clear;
+
+  //Check constraints
   if CountExits < 1 then
   begin
     Result := -3;

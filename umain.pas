@@ -520,8 +520,9 @@ begin
     //update map matrix
     currentValue := TGauntMaze(tabsMain.GetTabData(
       tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
-    if not (currentValue in [$2f, $3f, $36]) then
-      //if cell contains the player, a trap or an exit, do nothing
+    if  (currentValue < $11) and (currentValue > 0) then
+    //if cell contains other than a wall, do nothing. The engine supports binding
+    //any object (even an EXIT!) to traps, but the encoding format doesn't support it :-(
     begin
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
         1, Row - 1] := currentValue xor $80;
