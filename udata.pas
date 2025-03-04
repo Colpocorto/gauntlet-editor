@@ -12,7 +12,7 @@ type
   TGauntMap = array[0..31, 0..31] of byte;
   TLayer = (background, objects, positions);
   TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
-  TSearchTraceType = (sttWall, sttTrapWall, sttGate, sttExit);
+  TSearchTraceType = (sttWall, sttTrapWall, sttGateD, sttGateV, sttExit);
   TGauntVersion = (gvDSK, gvROM, gvCAS, gvTSX);
 
   TGauntStyle = record
@@ -48,6 +48,7 @@ type
     function FindTraces(Atype: TSearchTraceType): integer;
     function IsAWall(cell: byte): boolean;
     function IsAGate(cell: byte): boolean;
+    function IsAGateV(cell: byte): boolean;
     function IsATrapWall(cell: byte): boolean;
     function CountExits: integer;
     function IsLookedType(cell: byte; Atype: TSearchTraceType): boolean;
@@ -61,7 +62,7 @@ type
     MapData: TGauntMap;
     ItemData: TGauntMap;
 
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function getItemsLayersize(): integer;
     property Name: string read FName write FName;
@@ -417,7 +418,7 @@ end;
 function TGauntMaze.GetPlayerPos: TPoint;
 begin
   Result.X := self.FPlayerPos.X;
-  Result.Y := 0;
+  Result.Y := self.FPlayerPos.Y;
 end;
 
 function TGauntMaze.ProcessMap: integer;
@@ -599,7 +600,7 @@ begin
   self.FBuffer.Seek(4, TSeekOrigin.soBeginning);
   Result := Result + FindTraces(TSearchTraceType.sttWall);
   Result := Result + FindTraces(TSearchTraceType.sttTrapWall);
-  Result := Result + FindTraces(TSearchTraceType.sttGate);
+  Result := Result + FindTraces(TSearchTraceType.sttGateD);
   if CountExits > 2 then
     //if there are only one or two exits it's better to use the object RLE encoding
     Result := Result + FindTraces(TSearchTraceType.sttExit);
@@ -644,6 +645,7 @@ var
   Seq: TTraceSeq;
   CurrentLength, BestLength: integer;
   BestDir: integer;
+  GateSelect: integer = 0;
 begin
   InitVisitedData;
   Result := 0;
@@ -702,7 +704,7 @@ begin
                 FVisitedData[searchingCol, searchingRow] := 1;
               //CHECK this might write outbounds the array   (checked)
             end;
-            //add it to the sequence
+
             setLength(Seq.strokes, length(Seq.strokes) + 1);
             Seq.strokes[length(Seq.strokes) - 1].dir := SearchDirs[BestDir];
             Seq.strokes[length(Seq.strokes) - 1].steps := BestLength;
@@ -716,14 +718,22 @@ begin
           end;
         end;
         //Write the sequence to the buffer
-        self.FBuffer.WriteByte(GetTraceOriginCode(AType) + Seq.Xorigin);
-        self.FBuffer.WriteByte(GetTraceOriginCode(AType) + Seq.Yorigin);
+
+
+        //gate stroke is $40 unless the first stroke is RIGHT (also $40)
+
+        if (length(Seq.strokes) > 0) and (AType = sttGateD) then
+          if Seq.strokes[0].dir.byteCode = $40 then GateSelect := $40;
+
+        self.FBuffer.WriteByte(GetTraceOriginCode(AType) + GateSelect + Seq.Xorigin);
+        self.FBuffer.WriteByte(GetTraceOriginCode(AType) + GateSelect + Seq.Yorigin);
+
         //update size of this trace type
         Result := Result + 2;
 
         for i := 0 to length(Seq.strokes) - 1 do
         begin
-          self.FBuffer.WriteByte(Seq.strokes[i].dir.byteCode + Seq.strokes[i].steps-1
+          self.FBuffer.WriteByte(Seq.strokes[i].dir.byteCode + Seq.strokes[i].steps - 1
             );
           Result := Result + 1;
         end;
@@ -738,9 +748,10 @@ begin
       Result := $e0;
     sttTrapWall:
       Result := $c0;
-    sttGate:
+    sttGateD:
       Result := $40;
-    //needs to be convered to $80 somewhere if the first gate of the sequence is vertical
+    sttGateV:
+      Result := $80;
     sttExit:
       Result := $20;
   end;
@@ -762,6 +773,14 @@ begin
     Result := False;
 end;
 
+function TGauntMaze.IsAGateV(cell: byte): boolean;
+begin
+  if cell in [$12] then
+    Result := True
+  else
+    Result := False;
+end;
+
 function TGauntMaze.IsATrapWall(cell: byte): boolean;
 begin
   if (cell >= $81) and (cell <= $90) then
@@ -777,8 +796,10 @@ begin
       Result := IsAWall(cell);
     TSearchTraceType.sttTrapWall:
       Result := IsATrapWall(cell);
-    TSearchTraceType.sttGate:
+    TSearchTraceType.sttGateD:
       Result := IsAGate(cell);
+    TSearchTraceType.sttGateV:
+      Result := IsAGateV(cell);
     TSearchTraceType.sttExit:
       if cell = $36 then Result := True
       else
@@ -1038,12 +1059,13 @@ end;
 procedure TGauntMaze.FromFileStream(fs: TFileStream);
 var
   i: integer;
+  xpos, ypos: integer;
 begin
 
   try
     self.Name := fs.ReadAnsiString;
-    self.FPlayerPos.X := fs.ReadByte;
-    self.FPlayerPos.Y := fs.ReadByte;
+    xpos := fs.ReadByte;
+    ypos := fs.ReadByte;
     self.FHorzWrap := fs.ReadByte <> 0;
     self.FVertWrap := fs.ReadByte <> 0;
     self.FHurtPlayers := fs.ReadByte <> 0;
@@ -1053,6 +1075,7 @@ begin
     begin
       self.PokeMapData(i, fs.ReadByte);
     end;
+    self.SetPlayerPos(xpos, ypos);
   except
     on E: Exception do GauntDebugLn('Error loading maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);

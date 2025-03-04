@@ -23,6 +23,7 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Fix size calculation
 * Fix array bound violation while determining the best direction of traces
 + Space counting isn't taking into acount trap bound walls
+- Start position not correctly recalled from disk
 - Fix starting of "draw gate" command
 - Support for the ZX Spectrum version
 - Database persistence
