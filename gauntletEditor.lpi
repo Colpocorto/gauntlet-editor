@@ -151,6 +151,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="uData"/>
       </Unit>
+      <Unit>
+        <Filename Value="usaveexport.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fSaveExport"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uSaveExport"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

@@ -99,8 +99,9 @@ type
   TGauntBlock = array[0..9] of TGauntMaze;
 
 const
-  MAX_TRACE_SIZE = 255;
-  MAX_ITEM_SIZE = (512 - 4 - MAX_TRACE_SIZE);
+  WALL_GEN_ID = $10;
+  MAX_TRACE_SIZE = 255 - 4;
+  MAX_ITEM_SIZE = (512 - MAX_TRACE_SIZE);
   RESOURCES_DIR = 'resources/';
   DATABASE_FILENAME = 'gauntedit.sqlite3';
   APPDATA_DIR = '.gauntlet_editor/';
@@ -359,6 +360,7 @@ var
   transaction: TSQLTransaction;
   dbConn: TSQLite3Connection;
   HomeDir: string;
+  DFSdirections: array [0..3] of integer = (0, 1, 2, 3);
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
@@ -367,7 +369,13 @@ procedure GauntDebugLn(ATextLine: string);
 function GetUUID: string;
 function FindPatternDataById(APatternID: integer): TPictureIndex;
 function ImportBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
+function LoadBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
 procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+
+procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);
+procedure GenerateDFSMaze(var Maze: TGauntMap; startX, startY, x, y: integer;
+  BiasCoefficient: integer);
 
 implementation
 
@@ -441,7 +449,7 @@ begin
     Exit;
   end;
   TraceLayerSize := ProcessTraceLayer;
-  if TraceLayerSize > 255 then
+  if TraceLayerSize > MAX_TRACE_SIZE then
   begin
     Result := -1;    //trace layer size not allowed!!
     Exit;
@@ -452,6 +460,8 @@ begin
     Result := -2;    //object layer size not allowed!!
     Exit;
   end;
+
+
 
   Result := ObjectLayerSize + TraceLayerSize + 4;
   //Set header bytes
@@ -631,12 +641,12 @@ type
 const
   SearchDirs: array [0..7] of TSearchDir = (
     (colInc: 0; rowInc: -1; byteCode: $00),              //UP
-    (colInc: 1; rowInc: -1; byteCode: $20),             //UP-RIGHT
     (colInc: 1; rowInc: 0; byteCode: $40),               //RIGHT
-    (colInc: 1; rowInc: 1; byteCode: $60),               //DOWN-RIGHT
     (colInc: 0; rowInc: 1; byteCode: $80),               //DOWN
-    (colInc: -1; rowInc: 1; byteCode: $a0),              //DOWN-LEFT
     (colInc: -1; rowInc: 0; byteCode: $c0),              //LEFT
+    (colInc: 1; rowInc: -1; byteCode: $20),             //UP-RIGHT
+    (colInc: 1; rowInc: 1; byteCode: $60),               //DOWN-RIGHT
+    (colInc: -1; rowInc: 1; byteCode: $a0),              //DOWN-LEFT
     (colInc: -1; rowInc: -1; byteCode: $e0)               //UP-LEFT
     );
 var
@@ -704,9 +714,11 @@ begin
             begin
               searchingCol := CurrentCol + SearchDirs[BestDir].colInc * i;
               searchingRow := CurrentRow + SearchDirs[BestDir].rowInc * i;
-              if (searchingCol < 32) and (searchingRow < 32) then
+              if (searchingCol < 32) and (searchingRow < 32) and
+                (searchingCol >= 0) and (searchingRow >= 0) then
                 FVisitedData[searchingCol, searchingRow] := 1;
               //CHECK this might write outbounds the array   (checked)
+              //CHECK adjust this to the actual margins considering wrapping
             end;
 
             setLength(Seq.strokes, length(Seq.strokes) + 1);
@@ -1116,9 +1128,19 @@ begin
     end;
 end;
 
+function LoadBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
+begin
+  Result[0] := nil;
+end;
+
 function ImportBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
 begin
   Result[0] := nil;
+end;
+
+procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+begin
+  //TBD
 end;
 
 procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
@@ -1183,6 +1205,83 @@ begin
     end;
   end;
   fs.Free;
+end;
+
+procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);
+var
+  x, y, temp: integer;
+begin
+  for y := startY to 31 do
+    for x := startX to 31 do
+      Maze[x][y] := WALL_GEN_ID;  //single block
+
+  //initialize direction vector
+  // Shuffle the directions array to randomize the order
+  for x := 0 to 3 do
+  begin
+    y := Random(4);
+    temp := DFSdirections[x];
+    DFSdirections[x] := DFSdirections[y];
+    DFSdirections[y] := temp;
+  end;
+end;
+
+procedure GenerateDFSMaze(var Maze: TGauntMap; startX, startY, x, y: integer;
+  BiasCoefficient: integer);
+var
+  //directions: array[0..3] of integer = (0, 1, 2, 3);
+  dx, dy, nx, ny, i, j, temp: integer;
+begin
+  //adjust the constraints
+  if x < startX then x := startX;
+  if y < startY then y := startY;
+
+
+  Maze[x][y] := 0; // Mark the current cell as walkable
+
+  // Shuffle again with a random bias
+  for i := 0 to BiasCoefficient - 1 do
+  begin
+    j := Random(BiasCoefficient);
+    temp := DFSdirections[i];
+    DFSdirections[i] := DFSdirections[j];
+    DFSdirections[j] := temp;
+  end;
+
+  // Explore each direction
+  for i := 0 to 3 do
+  begin
+    case DFSdirections[i] of
+      0: begin
+        dx := 0;
+        dy := -1;
+      end; // Up
+      1: begin
+        dx := 1;
+        dy := 0;
+      end;  // Right
+      2: begin
+        dx := 0;
+        dy := 1;
+      end;  // Down
+      3: begin
+        dx := -1;
+        dy := 0;
+      end; // Left
+    end;
+
+    nx := x + dx * 2;
+    ny := y + dy * 2;
+
+    if (nx >= startX) and (nx < 32) and (ny >= startY) and (ny < 32) and
+      (Maze[nx][ny] = WALL_GEN_ID) then
+    begin
+      Maze[x + dx][y + dy] := 0; // Carve a path
+      GenerateDFSMaze(Maze, startX, startY, nx, ny, BiasCoefficient);
+      // Recursively generate the maze
+
+    end;
+  end;
 end;
 
 end.

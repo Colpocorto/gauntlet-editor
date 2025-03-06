@@ -10,13 +10,14 @@ uses
   BufDataset, DB, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
   Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
   BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRACustomDrawn, BCComboBox,
-  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList;
+  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport;
 
 type
 
   { TfMain }
 
   TfMain = class(TForm)
+    aGenerateDFSMaze: TAction;
     aLoadImport: TAction;
     aProcessMaze: TAction;
     aSaveExport: TAction;
@@ -66,9 +67,11 @@ type
     ilMenu: TImageList;
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
+    procedure aGenerateDFSMazeExecute(Sender: TObject);
     procedure aGoEditNameExecute(Sender: TObject);
     procedure aLoadImportExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
+    procedure aSaveExportExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
     procedure cbWrapHClick(Sender: TObject);
     procedure cbWrapVClick(Sender: TObject);
@@ -110,6 +113,7 @@ type
     procedure CreatePatternCtrls(AParent: TCustomControl);
     function ExpandPanelFactory(AContainer: TWinControl; AName: string;
       ACaption: string; AHeight: integer): TBCExpandPAnel;
+    procedure SyncTab(Sender: TObject);
   public
 
   end;
@@ -309,6 +313,11 @@ begin
     TATTabs(Sender).TabIndex).TabObject).Name;
 
   dgMap.Repaint;
+end;
+
+procedure TfMain.SyncTab(Sender: TObject);
+begin
+  tabsMainTabChanged(Sender);
 end;
 
 procedure TfMain.SelectButtonByStyle(styleId: integer);
@@ -520,9 +529,9 @@ begin
     //update map matrix
     currentValue := TGauntMaze(tabsMain.GetTabData(
       tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
-    if  (currentValue < $11) and (currentValue > 0) then
-    //if cell contains other than a wall, do nothing. The engine supports binding
-    //any object (even an EXIT!) to traps, but the encoding format doesn't support it :-(
+    if (currentValue < $11) and (currentValue > 0) then
+      //if cell contains other than a wall, do nothing. The engine supports binding
+      //any object (even an EXIT!) to traps, but the encoding format doesn't support it :-(
     begin
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
         1, Row - 1] := currentValue xor $80;
@@ -602,18 +611,40 @@ begin
   self.leName.Color := $5f5f5f;
 end;
 
+procedure TfMain.aGenerateDFSMazeExecute(Sender: TObject);
+var
+  startX: integer;
+  startY: integer = 1;
+begin
+  //first, initialize the maze taking into account the boundaries
+  if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).GetHorzWrap then
+    startX := 0
+  else
+    startX := 1;
+
+  InitializeDFSMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData,
+    startX, startY);
+
+  GenerateDFSMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData,
+    startX, startY, 15, 15, 3);
+  dgMap.Repaint;
+
+end;
+
 procedure TfMain.aLoadImportExecute(Sender: TObject);
 var
   od: TOpenDialog;
 begin
   od := TOpenDialog.Create(btnLoadImport);
-//  od.Options := (TOpenOptions..ofFileMustExist);
+  //  od.Options := (TOpenOptions..ofFileMustExist);
   if od.Execute then
   begin
     TGauntMaze(tabsMain.GetTabData(self.AddNewMaze).TabObject).FromFileStream(
       TFileStream.Create(od.FileName, fmOpenRead));
-     tabsMain.GetTabData(tabsMain.TabIndex).TabCaption := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
-     leName.Text:=TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+    tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+
+    SyncTab(tabsMain);
     dgMap.Repaint;
   end;
 
@@ -632,6 +663,13 @@ begin
     else
       ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
   end;
+end;
+
+procedure TfMain.aSaveExportExecute(Sender: TObject);
+begin
+  fSaveExport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
+    tabsMain.TabIndex).TabObject));
+  fSaveExport.ShowModal;
 end;
 
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
@@ -844,6 +882,8 @@ begin
     'Place Player', 6, @ToolButtonClick);
   PatternButtonFactory(AParent, ilTools, 7, 0, 'btnVerify', 'Verify the Maze',
     7, @aProcessMazeExecute);
+  PatternButtonFactory(AParent, ilTools, 9, 0, 'btnGenMaze1',
+    'Generate random Maze (type 1)', 9, @aGenerateDFSMazeExecute);
 
 end;
 
@@ -1180,7 +1220,7 @@ begin
   if GetKeyState(VK_MENU) < 0 then
     Include(Result, ssAlt);
 
-  // Check if btnLoadImport button is pressed
+  // Check if mouse left button is pressed
   if GetKeyState(VK_LBUTTON) < 0 then
     Include(Result, ssLeft);
 

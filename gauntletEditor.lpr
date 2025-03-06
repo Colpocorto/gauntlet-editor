@@ -15,7 +15,8 @@ uses
   LazLogger,
   lazcontrols,
   uMain,
-  uData { you can add units after this };
+  uData,
+  uSaveExport { you can add units after this };
 
   {$R *.res}
 
@@ -29,6 +30,8 @@ begin
   Application.Initialize;
   uData.InitData;
   Application.CreateForm(TfMain, fMain);
+  Application.CreateForm(TfSaveExport, fSaveExport);
+  //fSaveExport.Parent := fMain;
   Application.Run;
   uData.CleanData;
 end.
