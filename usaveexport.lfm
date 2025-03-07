@@ -1,0 +1,66 @@
+object fSaveExport: TfSaveExport
+  Left = 470
+  Height = 493
+  Top = 250
+  Width = 741
+  BorderStyle = bsNone
+  Caption = 'fSaveExport'
+  ClientHeight = 493
+  ClientWidth = 741
+  Color = 3881787
+  Font.Color = 15263976
+  object btnSave: TBitBtn
+    Left = 184
+    Height = 48
+    Top = 432
+    Width = 112
+    Caption = 'btnSave'
+    Color = 5197647
+    Font.Color = 15263976
+    ParentFont = False
+    TabOrder = 0
+  end
+  object btnExport: TBitBtn
+    Left = 324
+    Height = 48
+    Top = 432
+    Width = 112
+    Caption = 'btnExport'
+    Color = 5197647
+    Font.Color = 15263976
+    ParentFont = False
+    TabOrder = 1
+  end
+  object btnCanel: TBitBtn
+    Left = 461
+    Height = 48
+    Top = 432
+    Width = 112
+    Cancel = True
+    Color = 5197647
+    DefaultCaption = True
+    Font.Color = 15263976
+    Kind = bkCancel
+    ModalResult = 2
+    ParentFont = False
+    TabOrder = 2
+  end
+  object dialSaveMaze: TSaveDialog
+    DefaultExt = '.gmm'
+    Left = 8
+    Top = 440
+  end
+  object dialExportMaze: TSaveDialog
+    Left = 48
+    Top = 440
+  end
+  object dialExportBlock: TSaveDialog
+    Left = 136
+    Top = 440
+  end
+  object dialSaveBlock: TSaveDialog
+    DefaultExt = '.gmm'
+    Left = 96
+    Top = 440
+  end
+end
