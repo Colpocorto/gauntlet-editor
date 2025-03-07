@@ -16,7 +16,7 @@ uses
   lazcontrols,
   uMain,
   uData,
-  uSaveExport { you can add units after this };
+  uSaveExport, umazetools { you can add units after this };
 
   {$R *.res}
 
@@ -31,7 +31,7 @@ begin
   uData.InitData;
   Application.CreateForm(TfMain, fMain);
   Application.CreateForm(TfSaveExport, fSaveExport);
-  //fSaveExport.Parent := fMain;
+  Application.CreateForm(TfMazeTools, fMazetools);
   Application.Run;
   uData.CleanData;
 end.

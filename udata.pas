@@ -376,6 +376,7 @@ procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
 procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);
 procedure GenerateDFSMaze(var Maze: TGauntMap; startX, startY, x, y: integer;
   BiasCoefficient: integer);
+procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
 
 implementation
 
@@ -1282,6 +1283,17 @@ begin
 
     end;
   end;
+end;
+
+procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
+var
+  col, row: integer;
+begin
+
+  for col := 0 to 32 - 1 do
+    for row := 0 to 32 - 1 do
+      destination[col, row] := Source[col, row];
+
 end;
 
 end.

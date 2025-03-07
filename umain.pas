@@ -10,13 +10,14 @@ uses
   BufDataset, DB, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
   Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
   BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRACustomDrawn, BCComboBox,
-  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport;
+  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport, uMazeTools;
 
 type
 
   { TfMain }
 
   TfMain = class(TForm)
+    aShowMazeTools: TAction;
     aGenerateDFSMaze: TAction;
     aLoadImport: TAction;
     aProcessMaze: TAction;
@@ -72,6 +73,7 @@ type
     procedure aLoadImportExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
     procedure aSaveExportExecute(Sender: TObject);
+    procedure aShowMazeToolsExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
     procedure cbWrapHClick(Sender: TObject);
     procedure cbWrapVClick(Sender: TObject);
@@ -672,6 +674,13 @@ begin
   fSaveExport.ShowModal;
 end;
 
+procedure TfMain.aShowMazeToolsExecute(Sender: TObject);
+begin
+  fMazeTools.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject));
+  fMazeTools.SetPreviewObject(dgMap);
+  fMazeTools.Show;
+end;
+
 procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 var
@@ -880,10 +889,10 @@ begin
     5, @ToolButtonClick);
   PatternButtonFactory(AParent, ilTools, 6, 2, 'btnPlacePly',
     'Place Player', 6, @ToolButtonClick);
+  PatternButtonFactory(AParent, ilTools, 9, 0, 'btnGenMaze1',
+    'Generate random Maze (type 1)', 9, @aShowMazeToolsExecute);
   PatternButtonFactory(AParent, ilTools, 7, 0, 'btnVerify', 'Verify the Maze',
     7, @aProcessMazeExecute);
-  PatternButtonFactory(AParent, ilTools, 9, 0, 'btnGenMaze1',
-    'Generate random Maze (type 1)', 9, @aGenerateDFSMazeExecute);
 
 end;
 

@@ -620,6 +620,10 @@ object fMain: TfMain
       Caption = 'aGenerateDFSMaze'
       OnExecute = aGenerateDFSMazeExecute
     end
+    object aShowMazeTools: TAction
+      Caption = 'aShowMazeTools'
+      OnExecute = aShowMazeToolsExecute
+    end
   end
   object BCEPanelsOpt: TBCExpandPanels
     ArrangeKind = akTop

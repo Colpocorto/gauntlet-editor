@@ -100,6 +100,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="eccontrols"/>
+      </Item>
+      <Item>
         <PackageName Value="FCL"/>
       </Item>
       <Item>
@@ -158,6 +161,14 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uSaveExport"/>
+      </Unit>
+      <Unit>
+        <Filename Value="umazetools.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fMazeTools"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uMazeTools"/>
       </Unit>
     </Units>
   </ProjectOptions>
