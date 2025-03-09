@@ -16,7 +16,9 @@ uses
   lazcontrols,
   uMain,
   uData,
-  uSaveExport, umazetools { you can add units after this };
+  uSaveExport,
+  umazetools,
+  ukruskal { you can add units after this };
 
   {$R *.res}
 

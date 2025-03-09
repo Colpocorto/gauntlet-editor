@@ -5,7 +5,7 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, Controls, Graphics, LazLoggerBase,
+  Classes, SysUtils, Controls, Graphics, LazLoggerBase, fgl,
   SQLite3Conn, sqldb;
 
 type
@@ -26,6 +26,8 @@ type
     dir: TGauntTraceDir;
     steps: smallint;
   end;
+
+  TProcessResult = specialize TFPGMap<integer, string>;
 
   TGauntMaze = class(TComponent)
   private
@@ -51,6 +53,7 @@ type
     function IsAGateV(cell: byte): boolean;
     function IsATrapWall(cell: byte): boolean;
     function CountExits: integer;
+    function LocatePlayer(var Xpos, Ypos: integer): boolean;
     function IsLookedType(cell: byte; Atype: TSearchTraceType): boolean;
     function GetTraceOriginCode(AType: TSearchTraceType): byte;
     function PeekMapData(offset: integer): byte;
@@ -88,6 +91,10 @@ type
     function ProcessMap: integer;
     procedure SetPlayerPos(col: byte; row: byte);
     function GetPlayerPos: TPoint;
+    procedure FindRoomForPlayer(var startX, startY: integer);
+    procedure FindRoomForExit(var startX, startY: integer);
+    procedure HorzMirror;
+    procedure VertMirror;
 
   end;
 
@@ -360,7 +367,8 @@ var
   transaction: TSQLTransaction;
   dbConn: TSQLite3Connection;
   HomeDir: string;
-  DFSdirections: array [0..3] of integer = (0, 1, 2, 3);
+  DFSdirections: array [0..3] of integer = (0, 1, 2, 3); //, 4, 5, 6, 7);
+  ProcessResults: TProcessResult;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
@@ -376,6 +384,9 @@ procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
 procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);
 procedure GenerateDFSMaze(var Maze: TGauntMap; startX, startY, x, y: integer;
   BiasCoefficient: integer);
+procedure InitializePrimMaze(var Maze: TGauntMap; startX, startY: integer);
+procedure GeneratePrimMaze(var Maze: TGauntMap; startX, startY: integer);
+procedure ReduceWalls(var Maze: TGauntMap; startX, startY: integer);
 procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
 
 implementation
@@ -484,6 +495,7 @@ begin
   FBuffer.WriteByte(TraceLayerSize);
   self.FSize := Result;
 
+  {
   //TEMP, DELETE !!!!
   fsExport := TFileStream.Create('test.dat', fmCreate);
   self.ExportToFileStream(fsExport);
@@ -504,7 +516,7 @@ begin
   fsExport.Free;
   fsSave.Free;
   //fsExportBlock.Free;
-
+   }
 end;
 
 function TGauntMaze.AnyObjectsLeft(offset: integer): boolean;
@@ -937,7 +949,11 @@ begin
   begin
     debugln('There was a problem creating or opening the persistence layer.');
   end;
-
+  //Create key value lists
+  ProcessResults := TProcessResult.Create;
+  ProcessResults.Add(-1, 'The walls layer is too big!');
+  ProcessResults.Add(-2, 'The RLE layer is too big');
+  ProcessResults.Add(-3, 'There is no EXIT');
 end;
 
 procedure CleanData;
@@ -1269,6 +1285,24 @@ begin
         dx := -1;
         dy := 0;
       end; // Left
+      {
+      4: begin
+        dx := 1;
+        dy := -1;
+      end;
+      5: begin
+        dx := 1;
+        dy := 1;
+      end;
+      6: begin
+        dx := -1;
+        dy := 1;
+      end;
+      7: begin
+        dx := -1;
+        dy := -1;
+      end;
+      }
     end;
 
     nx := x + dx * 2;
@@ -1285,6 +1319,266 @@ begin
   end;
 end;
 
+procedure InitializePrimMaze(var Maze: TGauntMap; startX, startY: integer);
+var
+  x, y: integer;
+begin
+  for y := startY to 31 do
+    for x := startX to 31 do
+      Maze[x][y] := WALL_GEN_ID;  //single block
+
+end;
+
+{procedure InitializeKruskalMaze(var Maze: TGauntMap; startX, startY: integer);
+var
+  x, y: integer;
+begin
+  for y := startY to 31 do
+    for x := startX to 31 do
+      Maze[x][y] := WALL_GEN_ID;  //single block
+
+end;
+procedure GenerateKruskalMaze(var Maze: TGauntMap; startX, startY: integer);
+type
+  TEdge = record
+    x1, y1, x2, y2: integer;
+  end;
+const
+  SIZE = 32; // Size of the maze (32x32)
+var
+  edges: array of TEdge;
+  i, j, x, y, nx, ny, index: integer;
+  dirs: array[0..1] of TPoint = ((x: 1; y: 0), (x: 0; y: 1));
+  Parent: array[0..SIZE * SIZE - 1] of integer;
+
+  function FindSet(x: integer): integer;
+  begin
+    if Parent[x] <> x then
+      Parent[x] := FindSet(Parent[x]);
+    Result := Parent[x];
+  end;
+
+  procedure UnionSets(x, y: integer);
+  begin
+    Parent[FindSet(x)] := FindSet(y);
+  end;
+
+begin
+  // Initialize disjoint sets
+  for i := 0 to SIZE * SIZE - 1 do
+    Parent[i] := i;
+
+  // Generate all possible edges
+  for y := 0 to SIZE - 1 do
+    for x := 0 to SIZE - 1 do
+      for j := 0 to 1 do
+      begin
+        nx := x + dirs[j].x;
+        ny := y + dirs[j].y;
+        if (nx < SIZE) and (ny < SIZE) then
+        begin
+          SetLength(edges, Length(edges) + 1);
+          edges[High(edges)].x1 := x;
+          edges[High(edges)].y1 := y;
+          edges[High(edges)].x2 := nx;
+          edges[High(edges)].y2 := ny;
+        end;
+      end;
+
+  // Shuffle the edges
+  for i := 0 to Length(edges) - 1 do
+  begin
+    j := Random(Length(edges));
+    if i <> j then
+    begin
+      edges[i] := edges[j];
+      edges[j] := edges[i];
+    end;
+  end;
+
+  // Process edges
+  for i := 0 to Length(edges) - 1 do
+  begin
+    x := edges[i].x1;
+    y := edges[i].y1;
+    nx := edges[i].x2;
+    ny := edges[i].y2;
+
+    if FindSet(y * SIZE + x) <> FindSet(ny * SIZE + nx) then
+    begin
+      Maze[x][y] := 0;
+      Maze[nx][ny] := 0;
+      Maze[(x + nx) div 2][(y + ny) div 2] := 0;
+      UnionSets(y * SIZE + x, ny * SIZE + nx);
+    end;
+  end;
+end;
+}
+procedure GeneratePrimMaze(var Maze: TGauntMap; startX, startY: integer);
+var
+  frontier: array of TPoint;
+  dirs: array[0..3] of TPoint = ((x: 0; y: -2), (x: 2; y: 0), (x: 0;
+    y: 2), (x: -2; y: 0));
+  i, nx, ny, index: integer;
+  current: TPoint;
+begin
+  startY := startY - 1;
+  startX := startX - 1;
+  // Start with a random cell
+  current.x := 1 + Random((32) div 2) * 2;
+  current.y := 1 + Random((32) div 2) * 2;
+  Maze[current.x][current.y] := 0;
+
+  // Add neighboring walls to the frontier
+  for i := 0 to 3 do
+  begin
+    nx := current.x + dirs[i].x;
+    ny := current.y + dirs[i].y;
+    if (nx > startX) and (nx < 32) and (ny > startY) and (ny < 32) and
+      (Maze[nx][ny] = WALL_GEN_ID) then
+    begin
+      SetLength(frontier, Length(frontier) + 1);
+      frontier[High(frontier)] := Point(nx, ny);
+    end;
+  end;
+
+  while Length(frontier) > 0 do
+  begin
+    // Pick a random frontier cell
+    index := Random(Length(frontier));
+    current := frontier[index];
+    frontier[index] := frontier[High(frontier)];
+    SetLength(frontier, Length(frontier) - 1);
+
+    // Connect it to the maze
+    for i := 0 to 3 do
+    begin
+      nx := current.x + dirs[i].x;
+      ny := current.y + dirs[i].y;
+      if (nx > startX) and (nx < 32) and (ny > startY) and (ny < 32) and
+        (Maze[nx][ny] = 0) then
+      begin
+        Maze[current.x][current.y] := 0;
+        Maze[(current.x + nx) div 2][(current.y + ny) div 2] := 0;
+        Break;
+      end;
+    end;
+
+    // Add new frontier cells
+    for i := 0 to 3 do
+    begin
+      nx := current.x + dirs[i].x;
+      ny := current.y + dirs[i].y;
+      if (nx > startX) and (nx < 32) and (ny > startY) and (ny < 32) and
+        (Maze[nx][ny] = WALL_GEN_ID) then
+      begin
+        SetLength(frontier, Length(frontier) + 1);
+        frontier[High(frontier)] := Point(nx, ny);
+      end;
+    end;
+  end;
+end;
+
+procedure TGauntMaze.FindRoomForPlayer(var startX, startY: integer);
+var
+  col, row: integer;
+  firstCol: integer = 1;
+begin
+  if self.LocatePlayer(startX, startY) then Exit;
+
+  if self.FHorzWrap then firstCol := 0;
+
+  for col := firstCol to 31 do
+    for row := 1 to 31 do
+      if self.MapData[col, row] = 0 then
+      begin
+        self.MapData[col, row] := $3f;
+        startX := col;
+        startY := row;
+        exit;
+      end;
+  //not found (unlikely but might be, for the first corner to hold the character
+  self.MapData[firstCol, 1] := $3f;
+  startX := firstCol;
+  startY := 1;
+end;
+
+procedure TGauntMaze.FindRoomForExit(var startX, startY: integer);
+var
+  col, row: integer;
+  firstCol: integer = 1;
+begin
+  if self.FHorzWrap then firstCol := 0;
+
+  for col := 31 downto firstCol do
+    for row := 31 downto 1 do
+      if self.MapData[col, row] = 0 then
+      begin
+        self.MapData[col, row] := $36;
+        startX := col;
+        startY := row;
+        exit;
+      end;
+  //not found (unlikely but might be, for the first corner to hold the character
+  self.MapData[31, 31] := $36;
+  startX := 31;
+  startY := 31;
+end;
+
+procedure TGauntMaze.HorzMirror;
+var
+  firstCol: integer = 1;
+  col, row: integer;
+begin
+  if self.FHorzWrap then firstCol := 0;
+
+  for row := 17 to 31 do
+  begin
+    for col := firstCol to 31 do
+    begin
+      if self.MapData[col, row] <> $3f then
+        self.MapData[col, 31 - row + 1] := self.MapData[col, row];
+    end;
+  end;
+
+end;
+
+procedure TGauntMaze.VertMirror;
+var
+  firstCol: integer = 1;
+  col, row: integer;
+begin
+  if self.FHorzWrap then firstCol := 0;
+
+  for col := 16 + firstCol to 31 do
+  begin
+    for row := 1 to 31 do
+    begin
+      if self.MapData[col, row] <> $3f then
+        self.MapData[31 - col + 1 * firstCol, row] := self.MapData[col, row];
+    end;
+  end;
+
+end;
+
+function TGauntMaze.LocatePlayer(var Xpos, Ypos: integer): boolean;
+var
+  x, y: integer;
+begin
+  Result := False;
+
+  for x := 0 to 31 do
+    for y := 1 to 31 do
+      if self.MapData[x, y] = $3f then
+      begin
+        Xpos := x;
+        Ypos := y;
+        Result := True;
+        break;
+      end;
+
+end;
+
 procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
 var
   col, row: integer;
@@ -1294,6 +1588,38 @@ begin
     for row := 0 to 32 - 1 do
       destination[col, row] := Source[col, row];
 
+end;
+
+procedure ReduceWalls(var Maze: TGauntMap; startX, startY: integer);
+var
+  x, y: integer;
+
+  function CountLiveNeighbours(x, y: integer): integer;
+  begin
+    Result := 0;
+    if x > 0 then
+    begin
+      Result := Result + Maze[x - 1, y];
+      if y > 0 then Result := Result + Maze[x - 1, y - 1];
+      if y < 31 then Result := Result + Maze[x - 1, y + 1];
+    end;
+    if x < 31 then
+    begin
+      Result := Result + Maze[x + 1, y];
+      if y > 0 then Result := Result + Maze[x + 1, y - 1];
+      if y < 31 then Result := Result + Maze[x + 1, y + 1];
+    end;
+    if y > 0 then Result := Result + Maze[x, y - 1];
+    if y < 31 then Result := Result + Maze[x, y + 1];
+    Result := Result div WALL_GEN_ID;
+  end;
+
+begin
+  for x := startX to 31 do
+    for y := startY to 31 do
+    begin
+      if CountLiveNeighbours(x, y) < 2 then Maze[x, y] := 0;
+    end;
 end;
 
 end.

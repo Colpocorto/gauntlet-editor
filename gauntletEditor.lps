@@ -8,11 +8,10 @@
       <Unit>
         <Filename Value="gauntletEditor.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="4"/>
-        <CursorPos X="65" Y="19"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="6"/>
+        <CursorPos X="9" Y="21"/>
         <UsageCount Value="203"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="umain.pas"/>
@@ -22,7 +21,7 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uMain"/>
         <TopLine Value="659"/>
-        <CursorPos X="36" Y="680"/>
+        <CursorPos Y="676"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -31,10 +30,11 @@
         <Filename Value="udata.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="uData"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="352"/>
-        <CursorPos X="72" Y="379"/>
-        <FoldState Value=" TCHG41N"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="936"/>
+        <CursorPos X="43" Y="953"/>
+        <FoldState Value=" TCHG41 T3*10-022 pj5kU08015]B4n2091 PUB0 TL!f0{33"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit>
@@ -45,10 +45,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uSaveExport"/>
-        <EditorIndex Value="1"/>
-        <TopLine Value="9"/>
-        <CursorPos Y="35"/>
-        <UsageCount Value="136"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="87"/>
+        <CursorPos X="65" Y="103"/>
+        <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -59,34 +59,26 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uMazeTools"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="71"/>
-        <CursorPos X="49" Y="81"/>
-        <UsageCount Value="31"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="92"/>
+        <CursorPos X="48" Y="109"/>
+        <UsageCount Value="126"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="d:\lazarus\lcl\include\imglist.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1325"/>
-        <CursorPos X="27" Y="1339"/>
-        <UsageCount Value="2"/>
       </Unit>
       <Unit>
         <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\ATFlatControls\atflatcontrols\attabs.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="3792"/>
         <CursorPos Y="3814"/>
-        <UsageCount Value="98"/>
+        <UsageCount Value="88"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\include\wincontrol.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="6174"/>
         <CursorPos Y="6192"/>
-        <UsageCount Value="35"/>
+        <UsageCount Value="25"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\widgetset\wscontrols.pp"/>
@@ -94,151 +86,212 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="342"/>
         <CursorPos Y="362"/>
-        <UsageCount Value="35"/>
+        <UsageCount Value="25"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\include\control.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2960"/>
         <CursorPos Y="2976"/>
-        <UsageCount Value="35"/>
+        <UsageCount Value="25"/>
       </Unit>
       <Unit>
         <Filename Value="umain.lfm"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="314"/>
         <CursorPos X="41" Y="263"/>
-        <UsageCount Value="16"/>
+        <UsageCount Value="6"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit>
       <Unit>
         <Filename Value="umazetools.lfm"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="51" Y="11"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="0"/>
         <DefaultSyntaxHighlighter Value="LFM"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\components\lazutils\laztracer.pas"/>
+        <UnitName Value="LazTracer"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="72"/>
+        <CursorPos Y="58"/>
+        <UsageCount Value="25"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\ct4laz\pl_components\pl_cindy\source\cyBaseCombobox.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="88"/>
+        <CursorPos X="70" Y="122"/>
+        <UsageCount Value="7"/>
+      </Unit>
+      <Unit>
+        <Filename Value="ukruskal.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uKruskal"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="151"/>
+        <CursorPos Y="117"/>
+        <FoldState Value=" T7FHCY"/>
+        <UsageCount Value="41"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\interfaces\win32\win32listsl.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="136"/>
+        <CursorPos X="33" Y="154"/>
+        <UsageCount Value="9"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\include\customcombobox.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="861"/>
+        <CursorPos Y="878"/>
+        <UsageCount Value="9"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\include\customform.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2975"/>
+        <CursorPos Y="2992"/>
+        <UsageCount Value="10"/>
+      </Unit>
+      <Unit>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="3948"/>
+        <CursorPos Y="3970"/>
+        <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\fpc\3.2.2\source\rtl\objpas\fgl.pp"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="1639"/>
+        <CursorPos Y="1656"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
       </Unit>
     </Units>
     <JumpHistory HistoryIndex="29">
       <Position>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <Caret Line="3965" TopLine="3948"/>
+      </Position>
+      <Position>
         <Filename Value="umain.pas"/>
-        <Caret Line="679" Column="89" TopLine="659"/>
+        <Caret Line="675" Column="39" TopLine="659"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="112" TopLine="86"/>
+        <Filename Value="umain.pas"/>
+        <Caret Line="674" TopLine="659"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="117" Column="33" TopLine="87"/>
+        <Filename Value="umain.pas"/>
+        <Caret Line="675" TopLine="659"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="118" Column="33" TopLine="88"/>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <Caret Line="3965" TopLine="3948"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="117" Column="33" TopLine="87"/>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <Caret Line="3966" TopLine="3948"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="118" Column="33" TopLine="88"/>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <Caret Line="3967" TopLine="3948"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="117" Column="33" TopLine="87"/>
+        <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
+        <Caret Line="3970" TopLine="3948"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="118" Column="33" TopLine="88"/>
+        <Filename Value="umain.pas"/>
+        <Caret Line="674" TopLine="659"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="117" Column="33" TopLine="87"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1099" Column="50" TopLine="1078"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="119" Column="33" TopLine="89"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="29" Column="17" TopLine="11"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="120" Column="33" TopLine="60"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="46" Column="19" TopLine="15"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="121" Column="33" TopLine="61"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="82" Column="19" TopLine="56"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="120" Column="33" TopLine="60"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="83" Column="19" TopLine="57"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="121" Column="33" TopLine="61"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="84" Column="19" TopLine="58"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="120" Column="33" TopLine="60"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="372" Column="15" TopLine="345"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="119" Column="33" TopLine="59"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="382" Column="15" TopLine="355"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="120" Column="33" TopLine="60"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="912" TopLine="886"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="121" Column="33" TopLine="61"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="370" Column="17" TopLine="358"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="66" Column="3" TopLine="61"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="953" Column="19" TopLine="937"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="74" Column="92" TopLine="74"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="29" Column="38" TopLine="13"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="73" Column="92" TopLine="73"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="8" Column="61"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="74" Column="92" TopLine="74"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="370" Column="17" TopLine="354"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="75" Column="92" TopLine="75"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="953" Column="17" TopLine="940"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="76" Column="92" TopLine="76"/>
+        <Filename Value="udata.pas"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="77" Column="92" TopLine="77"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1624" Column="5" TopLine="1155"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="78" Column="92" TopLine="78"/>
+        <Filename Value="udata.pas"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="77" Column="92" TopLine="77"/>
+        <Filename Value="usaveexport.pas"/>
+        <Caret Line="104" TopLine="94"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="78" Column="92" TopLine="78"/>
+        <Filename Value="usaveexport.pas"/>
+        <Caret Line="103" Column="65" TopLine="87"/>
       </Position>
       <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="77" Column="92" TopLine="77"/>
-      </Position>
-      <Position>
-        <Filename Value="umazetools.pas"/>
-        <Caret Line="78" Column="92" TopLine="78"/>
+        <Filename Value="udata.pas"/>
+        <Caret Line="553" Column="9" TopLine="542"/>
       </Position>
     </JumpHistory>
     <RunParams>

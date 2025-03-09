@@ -23,9 +23,11 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Fix size calculation
 * Fix array bound violation while determining the best direction of traces
 + Space counting isn't taking into acount trap bound walls
+* The top border is overwritten when a random maze is generated and wrapping is enabled
+* Add a "BOOM" button to clear the whole maze
+* Fix starting of "draw gate" command
 - Add an "autofix" feature for too-complex maps (e.g. removing a stroke randomly)
 - Start position not correctly recalled from disk
-- Fix starting of "draw gate" command
 - Support for the ZX Spectrum version
 - Database persistence
 - Preview based on WebMSX
@@ -38,5 +40,3 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Use TPatternMap to implement the index-pattern map.
 - Fix "modified" glyph of TATTabs
 - Change TMemoryBuffer copy for a direct method
-- Add a "BOOM" button to clear the whole maze
-- The top border is overwritten when a random maze is generated and wrapping is enabled

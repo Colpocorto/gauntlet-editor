@@ -6,8 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ActnList, ExtCtrls,
-  Buttons, StdCtrls, Spin, SpinEx, BCButtonFocus, BCButton, BGRASpeedButton,
-  BCPanel, BCComboBox, ECSpinCtrls, uData;
+  Buttons, StdCtrls, Spin, ComboEx, cyBaseCombobox, TplComboBoxUnit, SpinEx,
+  RTTICtrls, BCButtonFocus, BCButton, BGRASpeedButton, BCPanel, BCComboBox,
+  BCCheckComboBox, BCFluentSlider, ECSpinCtrls, ECEditBtns, uData, uKruskal;
 
 type
 
@@ -15,12 +16,21 @@ type
 
   TfMazeTools = class(TForm)
     aCancel: TAction;
+    aDemolish: TAction;
+    aReduceWalls: TAction;
+    aGenerateMaze: TAction;
     aOk: TAction;
-    aGenerateDFSMaze: TAction;
     alMazeTools: TActionList;
+    btnReduceWalls: TSpeedButton;
+    btnDemolishMaze: TSpeedButton;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    slideWeight: TBCFluentSlider;
     btnOk: TBCButton;
     btnCancel: TBCButton;
     cbBias: TBCComboBox;
+    cbAlgorithm: TBCComboBox;
     cbOrgX: TBCComboBox;
     cbOrgY: TBCComboBox;
     ilMazeTools: TImageList;
@@ -28,14 +38,21 @@ type
     Label2: TLabel;
     Label3: TLabel;
     Label4: TLabel;
+    Label5: TLabel;
     panGenerate: TPanel;
     panEffects: TPanel;
     SpeedButton1: TSpeedButton;
+    btnHorzMirror: TSpeedButton;
+    brnVertMirror: TSpeedButton;
     procedure aCancelExecute(Sender: TObject);
-    procedure aGenerateDFSMazeExecute(Sender: TObject);
+    procedure aDemolishExecute(Sender: TObject);
+    procedure aGenerateMazeExecute(Sender: TObject);
     procedure aOkExecute(Sender: TObject);
+    procedure aReduceWallsExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure btnHorzMirrorClick(Sender: TObject);
+    procedure brnVertMirrorClick(Sender: TObject);
   private
     FCurrentMaze: TGauntMaze;
     FPreviewObject: TControl;
@@ -64,30 +81,83 @@ begin
   self.Close;
 end;
 
-procedure TfMazeTools.aGenerateDFSMazeExecute(Sender: TObject);
+procedure TfMazeTools.aDemolishExecute(Sender: TObject);
 var
   startX: integer;
   startY: integer = 1;
+  x, y: integer;
 begin
-  //first, initialize the maze taking into account the boundaries
+  if self.FCurrentMaze.GetHorzWrap then
+    startX := 0
+  else
+    startX := 1;
+  for x := startX to 31 do
+    for y := startY to 31 do
+      if (FCurrentMaze.MapData[x, y] <= $12) and (FCurrentMaze.MapData[x, y] > 0) then
+        FCurrentMaze.MapData[x, y] := 0;
+
+  self.FPreviewObject.Repaint;
+
+end;
+
+procedure TfMazeTools.aGenerateMazeExecute(Sender: TObject);
+var
+  startX: integer;
+  startY: integer = 1;
+  PosX, PosY: integer;
+begin
   if self.FCurrentMaze.GetHorzWrap then
     startX := 0
   else
     startX := 1;
 
-  InitializeDFSMaze(self.FCurrentMaze.MapData, startX, startY);
-  GenerateDFSMaze(self.FCurrentMaze.MapData, startX, startY,
-    cbOrgX.ItemIndex + 1,
-    cbOrgY.ItemIndex + 1, cbBias.ItemIndex + 1);
+  case cbAlgorithm.ItemIndex of
+    0:
+    begin
+      //DFS algorithm
+      InitializeDFSMaze(self.FCurrentMaze.MapData, startX, startY);
+      GenerateDFSMaze(self.FCurrentMaze.MapData, startX, startY,
+        cbOrgX.ItemIndex + 1,
+        cbOrgY.ItemIndex + 1, cbBias.ItemIndex + 1);
+    end;
+    1:
+    begin
+      //Prim's algorithm
+      InitializePrimMaze(self.FCurrentMaze.MapData, startX, startY);
+      GeneratePrimMaze(self.FCurrentMaze.MapData, startX, startY);
+    end;
+    2:
+    begin
+      //Kruskal's algorithm
+      //InitializeKruskalMaze(self.FCurrentMaze.MapData, startX, startY);
+      GenerateKruskalMaze(self.FCurrentMaze.MapData, startX, startY,
+        slideWeight.Value, 100 - slideWeight.Value);
+    end;
+  end;
+
+  self.FCurrentMaze.FindRoomForPlayer(PosX, PosY);
+  self.FCurrentMaze.FindRoomForExit(PosX, PosY);
 
   self.FPreviewObject.Repaint;
-
 end;
 
 procedure TfMazeTools.aOkExecute(Sender: TObject);
 begin
   self.BackupMaze; //store the new modification
   self.Close;
+end;
+
+procedure TfMazeTools.aReduceWallsExecute(Sender: TObject);
+var
+  startX: integer;
+  startY: integer = 1;
+begin
+  if self.FCurrentMaze.GetHorzWrap then
+    startX := 0
+  else
+    startX := 1;
+  ReduceWalls(self.FCurrentMaze.MapData, startX, startY);
+  FPreviewObject.Repaint;
 end;
 
 procedure TfMazeTools.FormClose(Sender: TObject; var CloseAction: TCloseAction);
@@ -99,6 +169,26 @@ procedure TfMazeTools.FormShow(Sender: TObject);
 begin
   //copy the active map to the backup
   self.BackupMaze;
+end;
+
+procedure TfMazeTools.btnHorzMirrorClick(Sender: TObject);
+var
+  PosX, PosY: integer;
+begin
+  FCurrentMaze.HorzMirror;
+  FCurrentMaze.FindRoomForPlayer(PosX, PosY);
+  //FCurrentMaze.FindRoomForExit(PosX, PosY);
+  FPreviewObject.Repaint;
+end;
+
+procedure TfMazeTools.brnVertMirrorClick(Sender: TObject);
+var
+  PosX, PosY: integer;
+begin
+  FCurrentMaze.VertMirror;
+  FCurrentMaze.FindRoomForPlayer(PosX, PosY);
+  //FCurrentMaze.FindRoomForExit(PosX, PosY);
+  FPreviewObject.Repaint;
 end;
 
 procedure TfMazeTools.SetCurrentMaze(AMaze: TGauntMaze);

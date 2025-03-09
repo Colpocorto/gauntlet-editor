@@ -671,7 +671,8 @@ procedure TfMain.aSaveExportExecute(Sender: TObject);
 begin
   fSaveExport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
     tabsMain.TabIndex).TabObject));
-  fSaveExport.ShowModal;
+  if fSaveExport.ShowModal = mrOk then tabsMain.GetTabData(
+    tabsMain.TabIndex).TabExtModified2:=false;
 end;
 
 procedure TfMain.aShowMazeToolsExecute(Sender: TObject);
