@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons, ExtCtrls,
-  EditBtn, StdCtrls, ActnList, kedits, BCButton, cyEditFilename, uData;
+  EditBtn, StdCtrls, ActnList, kedits, BCButton, cyEditFilename, uData, fgl;
 
 type
 
@@ -55,12 +55,17 @@ type
     panSelection: TPanel;
     btnOneMaze: TSpeedButton;
     procedure aCancelExecute(Sender: TObject);
+    procedure aExportBlockExecute(Sender: TObject);
+    procedure aExportMazeExecute(Sender: TObject);
+    procedure aSaveBlockExecute(Sender: TObject);
     procedure aSaveMazeExecute(Sender: TObject);
     procedure btnManyMazesClick(Sender: TObject);
     procedure btnOneMazeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure CreateFileList;
   private
     FCurrentMaze: TGauntMaze;
+    FMazeFileList: TMazeFileList;
   public
     procedure SetCurrentMaze(AMaze: TGauntMaze);
   end;
@@ -70,12 +75,30 @@ var
 
 implementation
 
+
 {$R *.lfm}
 
 procedure TfSaveExport.FormCreate(Sender: TObject);
 begin
   btnOneMaze.Down := True;
   btnOneMaze.Click;
+  CreateFileList;
+end;
+
+procedure TfSaveExport.CreateFileList;
+begin
+  //create list of TFileNameEdit controls
+  FMazeFileList := TMazeFileList.Create;
+  FMazeFileList.Add(0, self.editMazeFile1);
+  FMazeFileList.Add(1, self.editMazeFile2);
+  FMazeFileList.Add(2, self.editMazeFile3);
+  FMazeFileList.Add(3, self.editMazeFile4);
+  FMazeFileList.Add(4, self.editMazeFile5);
+  FMazeFileList.Add(5, self.editMazeFile6);
+  FMazeFileList.Add(6, self.editMazeFile7);
+  FMazeFileList.Add(7, self.editMazeFile8);
+  FMazeFileList.Add(8, self.editMazeFile9);
+  FMazeFileList.Add(9, self.editMazeFile10);
 end;
 
 procedure TfSaveExport.btnOneMazeClick(Sender: TObject);
@@ -94,34 +117,127 @@ end;
 
 procedure TfSaveExport.aSaveMazeExecute(Sender: TObject);
 var
-  processResult: integer;
   fsSave: TFileStream;
 begin
-  processResult := FCurrentMaze.ProcessMap;
-
-  case processResult of
-    -1,-2,-3: ShowMessage(ProcessResults.KeyData[processResult]);
-    else
+  self.ModalResult := mrCancel;
+  try
+    if dlgSaveMaze.Execute then
     begin
-      try
-        if dlgSaveMaze.Execute then
-        begin
-          fsSave := TFileStream.Create(dlgSaveMaze.FileName, fmCreate);
-          self.FCurrentMaze.ToFileStream(fsSave);
-        end;
-      finally
-        fsSave.Free;
-      end;
-      ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
+      fsSave := TFileStream.Create(dlgSaveMaze.FileName, fmCreate);
+      self.FCurrentMaze.ToFileStream(fsSave);
+      ShowMessage('Map saved successfully.');
+      self.ModalResult := mrOk;
     end;
+  finally
+    fsSave.Free;
   end;
-  self.ModalResult := mrOk;
 end;
 
 procedure TfSaveExport.aCancelExecute(Sender: TObject);
 begin
-  self.ModalResult:=mrCancel;
+  self.ModalResult := mrCancel;
   self.Close;
+end;
+
+procedure TfSaveExport.aExportBlockExecute(Sender: TObject);
+var
+  missingFile, verifyResult: integer;
+  fsSave: TFileStream;
+begin
+  missingFile := CheckAllFilesExist(FMazeFileList);
+  if missingFile <> -1 then
+  begin
+    ShowMessage('Please, check that file selected at Slot ' +
+      IntToStr(missingFile + 1) + ' exists.');
+  end
+  else
+  begin
+    LoadIntoBlock(FMazeFileList, uData.block);
+    verifyResult := VerifyBlock(uData.block);
+    case verifyResult of
+      -1:   //compile all mazes and verify errors
+      begin
+        try
+          if dlgExportBlock.Execute then
+          begin
+            fsSave := TFileStream.Create(dlgExportBlock.FileName, fmCreate);
+            ExportBlock(fsSave, uData.block, TGauntVersion.gvMSX_DSK);
+          end;
+          self.ModalResult := mrCancel;
+          //mrOk is reserved to flag single maze as unmodified
+          ShowMessage('Block saved successfully.');
+        finally
+          fsSave.Free;
+        end;
+      end;
+      -2:
+      begin
+        //The block is too big
+        ShowMessage('The block is too big to be loaded on memory. Please, replace some maze with a smaller one.');
+      end
+      else
+      begin
+        //there is a compilation error
+        ShowMessage('Maze at Slot ' + IntToStr(verifyResult) +
+          ' has errors. Please, open it on the editor and correct any issue, then try again.');
+      end;
+    end;
+  end;
+end;
+
+procedure TfSaveExport.aExportMazeExecute(Sender: TObject);
+var
+  processResult: integer;
+  fsSave: TFileStream;
+begin
+  self.ModalResult := mrCancel;
+  processResult := FCurrentMaze.ProcessMap;
+  case processResult of
+    -1, -2, -3: ShowMessage(ProcessResults.KeyData[processResult]);
+    else
+    begin
+      try
+        if dlgExportMaze.Execute then
+        begin
+          fsSave := TFileStream.Create(dlgExportMaze.FileName, fmCreate);
+          self.FCurrentMaze.ExportToFileStream(fsSave);
+        end;
+        self.ModalResult := mrOk;
+        ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
+      finally
+        fsSave.Free;
+      end;
+    end;
+  end;
+
+end;
+
+procedure TfSaveExport.aSaveBlockExecute(Sender: TObject);
+var
+  missingFile: integer;
+  fsSave: TFileStream;
+begin
+  missingFile := CheckAllFilesExist(FMazeFileList);
+  if missingFile <> -1 then
+  begin
+    ShowMessage('Please, check that file selected at Slot ' +
+      IntToStr(missingFile + 1) + ' exists.');
+  end
+  else
+  begin
+    try
+      LoadIntoBlock(FMazeFileList, uData.block);
+      if dlgSaveBlock.Execute then
+      begin
+        fsSave := TFileStream.Create(dlgSaveBlock.FileName, fmCreate);
+        SaveBlock(fsSave, uData.block);
+      end;
+      self.ModalResult := mrCancel; //mrOk is reserved to flag single maze as unmodified
+      ShowMessage('Block saved successfully.');
+    finally
+      fsSave.Free;
+    end;
+  end;
 end;
 
 procedure TfSaveExport.SetCurrentMaze(AMaze: TGauntMaze);

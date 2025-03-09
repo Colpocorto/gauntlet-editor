@@ -74,6 +74,7 @@ var
 
 implementation
 
+uses uMain;
 {$R *.lfm}
 
 procedure TfMazeTools.aCancelExecute(Sender: TObject);
@@ -163,6 +164,7 @@ end;
 procedure TfMazeTools.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   self.RestoreMaze;
+  fMain.Show;
 end;
 
 procedure TfMazeTools.FormShow(Sender: TObject);

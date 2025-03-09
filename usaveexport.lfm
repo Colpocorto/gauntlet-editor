@@ -12132,12 +12132,16 @@ object fSaveExport: TfSaveExport
     end
     object aExportMaze: TAction
       Caption = 'Export'
+      OnExecute = aExportMazeExecute
     end
     object aSaveBlock: TAction
       Caption = 'Save'
+      ShortCut = 16467
+      OnExecute = aSaveBlockExecute
     end
     object aExportBlock: TAction
       Caption = 'Export'
+      OnExecute = aExportBlockExecute
     end
     object aCancel: TAction
       Caption = 'Cancel'

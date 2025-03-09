@@ -51,3 +51,8 @@ Thumbs.db
 log.txt
 lib/
 backup/
+screenshots/
+work/
+algorithm/
+sqlite3.dll.bak
+sqlite3.exe.bak

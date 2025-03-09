@@ -5,15 +5,19 @@ unit uData;
 interface
 
 uses
-  Classes, SysUtils, Controls, Graphics, LazLoggerBase, fgl,
-  SQLite3Conn, sqldb;
+  Classes, SysUtils, Controls, Graphics, LazLoggerBase, editbtn, fgl
+  //  ,SQLite3Conn, sqldb
+  ;
 
 type
   TGauntMap = array[0..31, 0..31] of byte;
   TLayer = (background, objects, positions);
   TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
   TSearchTraceType = (sttWall, sttTrapWall, sttGateD, sttGateV, sttExit);
-  TGauntVersion = (gvDSK, gvROM, gvCAS, gvTSX);
+  TGauntVersion = (gvMSX_DSK, gvMSX_ROM, gvMSX_TSX, gMSX_CAS,
+    gvZX_TZX,
+    gvCPC_TZX
+    );
 
   TGauntStyle = record
     id: integer;
@@ -28,6 +32,7 @@ type
   end;
 
   TProcessResult = specialize TFPGMap<integer, string>;
+  TMazeFileList = specialize TFPGMap<integer, TControl>;
 
   TGauntMaze = class(TComponent)
   private
@@ -85,9 +90,7 @@ type
     procedure InitVisitedData;
     procedure ToFileStream(fs: TFileStream);
     procedure FromFileStream(fs: TFileStream);
-
     procedure ExportToFileStream(fs: TFileStream);
-
     function ProcessMap: integer;
     procedure SetPlayerPos(col: byte; row: byte);
     function GetPlayerPos: TPoint;
@@ -364,11 +367,13 @@ var
   ilTools: TImageList;
   resourcesDir: string;
   patternIndexMap: array of integer;
-  transaction: TSQLTransaction;
-  dbConn: TSQLite3Connection;
+  block: TGauntBlock;
+  {transaction: TSQLTransaction;
+  dbConn: TSQLite3Connection;}
   HomeDir: string;
   DFSdirections: array [0..3] of integer = (0, 1, 2, 3); //, 4, 5, 6, 7);
   ProcessResults: TProcessResult;
+
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
@@ -378,9 +383,9 @@ function GetUUID: string;
 function FindPatternDataById(APatternID: integer): TPictureIndex;
 function ImportBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
 function LoadBlock(fs: TFileStream; AType: TGauntVersion): TGauntBlock;
-procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
-procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
-
+procedure LoadIntoBlock(FileList: TMazeFileList; var Block: TGauntBlock);
+procedure ExportBlock(fs: TFileStream; var ABlock: TGauntBlock; AType: TGauntVersion);
+procedure SaveBlock(fs: TFileStream; var ABlock: TGauntBlock);
 procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);
 procedure GenerateDFSMaze(var Maze: TGauntMap; startX, startY, x, y: integer;
   BiasCoefficient: integer);
@@ -388,6 +393,8 @@ procedure InitializePrimMaze(var Maze: TGauntMap; startX, startY: integer);
 procedure GeneratePrimMaze(var Maze: TGauntMap; startX, startY: integer);
 procedure ReduceWalls(var Maze: TGauntMap; startX, startY: integer);
 procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
+function CheckAllFilesExist(FileList: TMazeFileList): integer;
+function VerifyBlock(var ABlock: TGauntBlock): integer;
 
 implementation
 
@@ -446,7 +453,7 @@ var
   TraceLayerSize: integer;
   ObjectLayerSize: integer;
   tmpbyte: byte;
-  block: TGauntBlock;      //TEMP DELETE!!!
+
   fsExport: TFileStream;
   fsSave: TFileStream;
   fsExportBlock: TFileStream;
@@ -918,7 +925,7 @@ begin
     CreateDir(HomeDir + APPDATA_DIR);
 
   resourcesDir := ExtractFilePath(ParamStr(0)) + RESOURCES_DIR;
-
+ {
   //Initialize database stuff
   transaction := TSQLTransaction.Create(nil);
   dbConn := TSQLite3Connection.Create(nil);
@@ -949,19 +956,21 @@ begin
   begin
     debugln('There was a problem creating or opening the persistence layer.');
   end;
+  }
   //Create key value lists
   ProcessResults := TProcessResult.Create;
   ProcessResults.Add(-1, 'The walls layer is too big!');
   ProcessResults.Add(-2, 'The RLE layer is too big');
   ProcessResults.Add(-3, 'There is no EXIT');
+
 end;
 
 procedure CleanData;
 begin
   patternIndex := [];
-  dbConn.Close(True);
+  {dbConn.Close(True);
   dbConn.Free;
-  transaction.Free;
+  transaction.Free;}
 end;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
@@ -1113,7 +1122,7 @@ begin
     on E: Exception do GauntDebugLn('Error loading maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);
   end;
-  fs.Free;
+  //fs.Free; //must be freed from the outside to allow loading a sequence of maps
 end;
 
 procedure GauntDebugLn(ATextLine: string);
@@ -1155,12 +1164,73 @@ begin
   Result[0] := nil;
 end;
 
-procedure SaveBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+procedure SaveBlock(fs: TFileStream; var ABlock: TGauntBlock);
+var
+  i: integer;
 begin
-  //TBD
+  fs.Seek(0, TSeekOrigin.soBeginning);
+
+  try
+    for i := 0 to 9 do
+    begin
+      ABlock[i].ToFileStream(fs);
+    end;
+  finally
+    // fs.Free;
+  end;
 end;
 
-procedure ExportBlock(fs: TFileStream; ABlock: TGauntBlock; AType: TGauntVersion);
+function CheckAllFilesExist(FileList: TMazeFileList): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+  for i := 0 to 9 do
+  begin
+    if not FileExists(TFileNameEdit(FileList.KeyData[i]).FileName, True) then
+    begin
+      Result := i;
+      exit;
+    end;
+  end;
+end;
+
+function VerifyBlock(var ABlock: TGauntBlock): integer;
+var
+  i: integer;
+  VerifyResult: integer;
+  count: integer;
+begin
+  //Return -1 if all blocks have been compiled successfully
+  //Return -2 if size is too big
+  //Return i_maze if maze can't be verified
+
+  count := length(HEAD_DSK);
+
+  Result := -1;
+  for i := 0 to 9 do
+  begin
+    if assigned(ABlock[i]) then
+    begin
+      VerifyResult := ABlock[i].ProcessMap;
+      if (VerifyResult = -1) or (VerifyResult = -2) or (VerifyResult = -3) then
+      begin
+        Result := i;
+        exit;
+      end;
+    end
+    else
+    begin
+      Result := i;
+      exit;
+    end;
+    count := count + VerifyResult;
+  end;
+  if count > ($de80-$d000) then Result := -2; //CHECK must be fixed for each version
+
+end;
+
+procedure ExportBlock(fs: TFileStream; var ABlock: TGauntBlock; AType: TGauntVersion);
 
   procedure writeBinHeader(fs: TFileStream);
   begin
@@ -1186,7 +1256,7 @@ var
 begin
   try
     case AType of
-      gvDSK:
+      gvMSX_DSK:
       begin
         //write header
         writeBinHeader(fs);
@@ -1221,7 +1291,26 @@ begin
       GauntDebugLn('Error writing maze to file ' + fs.FileName + ': ' + E.Message);
     end;
   end;
-  fs.Free;
+  //fs.Free;
+end;
+
+procedure LoadIntoBlock(FileList: TMazeFileList; var Block: TGauntBlock);
+var
+  i: integer;
+  maze: TGauntMaze;
+  fs: TFileStream;
+begin
+  try
+    for i := 0 to 9 do
+    begin
+      maze := TGauntMaze.Create(nil);
+      fs := TFileStream.Create(TFileNameEdit(FileList.KeyData[i]).FileName, fmOpenRead);
+      maze.FromFileStream(fs);
+      Block[i] := maze;
+      fs.Free;
+    end;
+  finally
+  end;
 end;
 
 procedure InitializeDFSMaze(var Maze: TGauntMap; startX, startY: integer);

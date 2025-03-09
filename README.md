@@ -37,6 +37,7 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Apply styles on the zoom
 - Fix font resolution issues on Linux
 - Check compilation on Mac
-- Use TPatternMap to implement the index-pattern map.
+- Use TFPGMap to implement the index-pattern map.
 - Fix "modified" glyph of TATTabs
 - Change TMemoryBuffer copy for a direct method
+- Check max block size (#d000-#de7f). The game copies things at #de80 and it can break the last block. Check for other versions including ZX and CPC.
