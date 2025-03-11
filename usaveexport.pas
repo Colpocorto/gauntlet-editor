@@ -38,19 +38,19 @@ type
     editMazeFile8: TFileNameEdit;
     editMazeFile9: TFileNameEdit;
     ilExport: TImageList;
-    Label1: TLabel;
-    Label10: TLabel;
-    Label11: TLabel;
-    Label12: TLabel;
-    Label13: TLabel;
-    Label14: TLabel;
-    Label15: TLabel;
+    lblTreasureLegend: TLabel;
+    lblSlot05: TLabel;
+    lblSlot06: TLabel;
+    lblSlot07: TLabel;
+    lblSlot08: TLabel;
+    lblSlot09: TLabel;
+    lblSlot10: TLabel;
     lblOneMaze: TLabel;
     lblMazeBlock: TLabel;
-    Label6: TLabel;
-    Label7: TLabel;
-    Label8: TLabel;
-    Label9: TLabel;
+    lblSlot01: TLabel;
+    lblSlot02: TLabel;
+    lblSlot03: TLabel;
+    lblSlot04: TLabel;
     panCollection: TPanel;
     panSelection: TPanel;
     btnOneMaze: TSpeedButton;
@@ -121,12 +121,20 @@ var
 begin
   self.ModalResult := mrCancel;
   try
-    if dlgSaveMaze.Execute then
-    begin
-      fsSave := TFileStream.Create(dlgSaveMaze.FileName, fmCreate);
-      self.FCurrentMaze.ToFileStream(fsSave);
-      ShowMessage('Map saved successfully.');
-      self.ModalResult := mrOk;
+    try
+      if dlgSaveMaze.Execute then
+      begin
+        fsSave := TFileStream.Create(dlgSaveMaze.FileName, fmCreate);
+        self.FCurrentMaze.ToFileStream(fsSave);
+        ShowMessage('Map saved successfully.');
+        self.ModalResult := mrOk;
+      end;
+    except
+      on E: Exception do
+      begin ShowMessage('Error saving maze ' +
+          fsSave.FileName + ': ' + E.Message);
+          self.ModalResult := mrCancel;
+      end;
     end;
   finally
     fsSave.Free;
@@ -158,14 +166,19 @@ begin
       -1:   //compile all mazes and verify errors
       begin
         try
-          if dlgExportBlock.Execute then
-          begin
-            fsSave := TFileStream.Create(dlgExportBlock.FileName, fmCreate);
-            ExportBlock(fsSave, uData.block, TGauntVersion.gvMSX_DSK);
+          try
+            if dlgExportBlock.Execute then
+            begin
+              fsSave := TFileStream.Create(dlgExportBlock.FileName, fmCreate);
+              ExportBlock(fsSave, uData.block, TGauntVersion.gvMSX_DSK);
+            end;
+            self.ModalResult := mrCancel;
+            //mrOk is reserved to flag single maze as unmodified
+            ShowMessage('Block saved successfully.');
+          except
+            on E: Exception do
+              ShowMessage('Error exporting block ' + fsSave.FileName + ': ' + E.Message);
           end;
-          self.ModalResult := mrCancel;
-          //mrOk is reserved to flag single maze as unmodified
-          ShowMessage('Block saved successfully.');
         finally
           fsSave.Free;
         end;
@@ -197,13 +210,19 @@ begin
     else
     begin
       try
-        if dlgExportMaze.Execute then
-        begin
-          fsSave := TFileStream.Create(dlgExportMaze.FileName, fmCreate);
-          self.FCurrentMaze.ExportToFileStream(fsSave);
+        try
+          if dlgExportMaze.Execute then
+          begin
+            fsSave := TFileStream.Create(dlgExportMaze.FileName, fmCreate);
+            self.FCurrentMaze.ExportToFileStream(fsSave);
+          end;
+          self.ModalResult := mrOk;
+          ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
+
+        except
+          on E: Exception do
+            ShowMessage('Error exporting maze ' + fsSave.FileName + ': ' + E.Message);
         end;
-        self.ModalResult := mrOk;
-        ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
       finally
         fsSave.Free;
       end;
@@ -226,14 +245,20 @@ begin
   else
   begin
     try
-      LoadIntoBlock(FMazeFileList, uData.block);
-      if dlgSaveBlock.Execute then
-      begin
-        fsSave := TFileStream.Create(dlgSaveBlock.FileName, fmCreate);
-        SaveBlock(fsSave, uData.block);
+      try
+        LoadIntoBlock(FMazeFileList, uData.block);
+        if dlgSaveBlock.Execute then
+        begin
+          fsSave := TFileStream.Create(dlgSaveBlock.FileName, fmCreate);
+          SaveBlock(fsSave, uData.block);
+        end;
+        self.ModalResult := mrCancel; //mrOk is reserved to flag single maze as unmodified
+        ShowMessage('Block saved successfully.');
+
+      except
+        on E: Exception do
+          ShowMessage('Error saving block ' + fsSave.FileName + ': ' + E.Message);
       end;
-      self.ModalResult := mrCancel; //mrOk is reserved to flag single maze as unmodified
-      ShowMessage('Block saved successfully.');
     finally
       fsSave.Free;
     end;

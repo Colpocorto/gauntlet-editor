@@ -49,6 +49,7 @@ type
     FCreationDate: TDateTime;
     FLastSavedDate: TDateTime;
     FPlayerPos: TPoint;
+    FFileName: string;
     procedure InitMap(var map: TGauntMap);
     function ProcessTraceLayer: integer;
     function ProcessObjectLayer: integer;
@@ -74,6 +75,7 @@ type
     destructor Destroy; override;
     function getItemsLayersize(): integer;
     property Name: string read FName write FName;
+    property FileName: string read FFileName write FFileName;
     property StunPlayers: boolean read FStunPlayers write FStunPlayers;
     property HurtPlayers: boolean read FHurtPlayers write FHurtPlayers;
     property Style: TGauntStyle read FStyle write FStyle;
@@ -373,7 +375,8 @@ var
   HomeDir: string;
   DFSdirections: array [0..3] of integer = (0, 1, 2, 3); //, 4, 5, 6, 7);
   ProcessResults: TProcessResult;
-
+  ActionStatusText: string;
+  ActionStatus: integer;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
 procedure InitData;
@@ -416,6 +419,7 @@ begin
   self.FPlayerPos.X := 1;
   self.FPlayerPos.Y := 1;
   self.SetPlayerPos(1, 1);
+  self.FileName := '';
 end;
 
 destructor TGauntMaze.Destroy;
@@ -1175,8 +1179,8 @@ begin
     begin
       ABlock[i].ToFileStream(fs);
     end;
-  finally
-    // fs.Free;
+  except
+    raise;
   end;
 end;
 
@@ -1199,13 +1203,13 @@ function VerifyBlock(var ABlock: TGauntBlock): integer;
 var
   i: integer;
   VerifyResult: integer;
-  count: integer;
+  Count: integer;
 begin
   //Return -1 if all blocks have been compiled successfully
   //Return -2 if size is too big
   //Return i_maze if maze can't be verified
 
-  count := length(HEAD_DSK);
+  Count := length(HEAD_DSK);
 
   Result := -1;
   for i := 0 to 9 do
@@ -1224,9 +1228,9 @@ begin
       Result := i;
       exit;
     end;
-    count := count + VerifyResult;
+    Count := Count + VerifyResult;
   end;
-  if count > ($de80-$d000) then Result := -2; //CHECK must be fixed for each version
+  if Count > ($de80 - $d000) then Result := -2; //CHECK must be fixed for each version
 
 end;
 
@@ -1573,7 +1577,7 @@ var
   col, row: integer;
   firstCol: integer = 1;
 begin
-  if self.LocatePlayer(startX, startY) then Exit;
+  if self.LocatePlayer(startX, startY) then Exit; //return the position in vars
 
   if self.FHorzWrap then firstCol := 0;
 

@@ -18,9 +18,11 @@ uses
   uData,
   uSaveExport,
   umazetools,
-  ukruskal { you can add units after this };
+  ukruskal,
+  uloadimport { you can add units after this };
 
   {$R *.res}
+
 
 begin
   RequireDerivedFormResource := True;
@@ -34,6 +36,7 @@ begin
   Application.CreateForm(TfMain, fMain);
   Application.CreateForm(TfSaveExport, fSaveExport);
   Application.CreateForm(TfMazeTools, fMazetools);
+  Application.CreateForm(TfLoadImport, fLoadImport);
   Application.Run;
   uData.CleanData;
 end.

@@ -10,6 +10,7 @@ object fMazeTools: TfMazeTools
   ClientWidth = 669
   Color = 3881787
   FormStyle = fsStayOnTop
+  LCLVersion = '4.0.0.2'
   OnClose = FormClose
   OnShow = FormShow
   object panGenerate: TPanel

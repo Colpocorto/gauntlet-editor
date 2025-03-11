@@ -178,6 +178,14 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="uKruskal"/>
       </Unit>
+      <Unit>
+        <Filename Value="uloadimport.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="fLoadImport"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="uLoadImport"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

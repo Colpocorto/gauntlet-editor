@@ -7,10 +7,11 @@ interface
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
   PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, Types, uData,
-  BufDataset, DB, ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
+  BufDataset, {DB,} ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
   Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
   BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRACustomDrawn, BCComboBox,
-  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport, uMazeTools;
+  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport, uMazeTools,
+  uLoadImport;
 
 type
 
@@ -636,20 +637,32 @@ end;
 procedure TfMain.aLoadImportExecute(Sender: TObject);
 var
   od: TOpenDialog;
+  i: integer;
 begin
-  od := TOpenDialog.Create(btnLoadImport);
-  //  od.Options := (TOpenOptions..ofFileMustExist);
-  if od.Execute then
-  begin
-    TGauntMaze(tabsMain.GetTabData(self.AddNewMaze).TabObject).FromFileStream(
-      TFileStream.Create(od.FileName, fmOpenRead));
-    tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
-      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+  fLoadImport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
+    tabsMain.TabIndex).TabObject));
 
-    SyncTab(tabsMain);
-    dgMap.Repaint;
+  case fLoadImport.ShowModal of
+    mrOk:                    //one maze loaded or imported
+    begin
+      tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[0];
+      tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
+        TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+      tabsMain.GetTabData(tabsMain.TabIndex).TabHint :=
+        TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
+      SyncTab(tabsMain);
+      dgMap.Repaint;
+    end;
+    mrAll:                   //a whole block has been loaded or imported
+    begin
+      //take it from uData.block
+    end;
   end;
 
+  {
+  if fLoadExport.ShowModal = mrOk then tabsMain.GetTabData(
+    tabsMain.TabIndex).TabExtModified2:=false;
+   }
 end;
 
 procedure TfMain.aProcessMazeExecute(Sender: TObject);
@@ -671,13 +684,20 @@ procedure TfMain.aSaveExportExecute(Sender: TObject);
 begin
   fSaveExport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
     tabsMain.TabIndex).TabObject));
-  if fSaveExport.ShowModal = mrOk then tabsMain.GetTabData(
-    tabsMain.TabIndex).TabExtModified2:=false;
+  if fSaveExport.ShowModal = mrOk then
+  begin
+    tabsMain.GetTabData(
+      tabsMain.TabIndex).TabExtModified2 := False;
+    tabsMain.GetTabData(
+      tabsMain.TabIndex).TabHint :=
+      TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
+  end;
 end;
 
 procedure TfMain.aShowMazeToolsExecute(Sender: TObject);
 begin
-  fMazeTools.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject));
+  fMazeTools.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
+    tabsMain.TabIndex).TabObject));
   fMazeTools.SetPreviewObject(dgMap);
   fMazeTools.Show;
 end;

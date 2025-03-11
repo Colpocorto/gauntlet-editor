@@ -6,9 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ActnList, ExtCtrls,
-  Buttons, StdCtrls, Spin, ComboEx, cyBaseCombobox, TplComboBoxUnit, SpinEx,
-  RTTICtrls, BCButtonFocus, BCButton, BGRASpeedButton, BCPanel, BCComboBox,
-  BCCheckComboBox, BCFluentSlider, ECSpinCtrls, ECEditBtns, uData, uKruskal;
+  Buttons, StdCtrls, SpinEx,
+  RTTICtrls, BCButton, BCComboBox, BCFluentSlider, ECSpinCtrls, uData, uKruskal;
 
 type
 
@@ -75,7 +74,7 @@ var
 implementation
 
 uses uMain;
-{$R *.lfm}
+  {$R *.lfm}
 
 procedure TfMazeTools.aCancelExecute(Sender: TObject);
 begin
@@ -105,7 +104,8 @@ procedure TfMazeTools.aGenerateMazeExecute(Sender: TObject);
 var
   startX: integer;
   startY: integer = 1;
-  PosX, PosY: integer;
+  PosX: integer = 0;
+  PosY: integer = 0;
 begin
   if self.FCurrentMaze.GetHorzWrap then
     startX := 0
@@ -136,8 +136,11 @@ begin
     end;
   end;
 
-  self.FCurrentMaze.FindRoomForPlayer(PosX, PosY);
+  self.FCurrentMaze.FindRoomForPlayer(PosX, PosY);  //PosX, PosY passed as reference
+  self.FCurrentMaze.SetPlayerPos(PosX, PosY);
+
   self.FCurrentMaze.FindRoomForExit(PosX, PosY);
+  //PosX, PosY passed as reference, not use here
 
   self.FPreviewObject.Repaint;
 end;
@@ -175,21 +178,24 @@ end;
 
 procedure TfMazeTools.btnHorzMirrorClick(Sender: TObject);
 var
-  PosX, PosY: integer;
+  PosX: integer = 0;
+  PosY: integer = 0;
 begin
   FCurrentMaze.HorzMirror;
   FCurrentMaze.FindRoomForPlayer(PosX, PosY);
-  //FCurrentMaze.FindRoomForExit(PosX, PosY);
+  FCurrentMaze.SetPlayerPos(PosX, PosY);
+
   FPreviewObject.Repaint;
 end;
 
 procedure TfMazeTools.brnVertMirrorClick(Sender: TObject);
 var
-  PosX, PosY: integer;
+  PosX: integer = 0;
+  PosY: integer = 0;
 begin
   FCurrentMaze.VertMirror;
   FCurrentMaze.FindRoomForPlayer(PosX, PosY);
-  //FCurrentMaze.FindRoomForExit(PosX, PosY);
+
   FPreviewObject.Repaint;
 end;
 

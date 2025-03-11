@@ -1,11 +1,11 @@
-object fSaveExport: TfSaveExport
+object fLoadImport: TfLoadImport
   Left = 470
   Height = 576
   Top = 250
   Width = 741
   Anchors = [akTop, akLeft, akRight]
   BorderStyle = bsNone
-  Caption = 'Save/Export'
+  Caption = 'Load/Import'
   ClientHeight = 576
   ClientWidth = 741
   Color = 3881787
@@ -31,7 +31,7 @@ object fSaveExport: TfSaveExport
       Width = 151
       Flat = True
       GroupIndex = 1
-      Images = ilExport
+      Images = ilImport
       ImageIndex = 0
       ImageWidth = 128
       Layout = blGlyphTop
@@ -44,7 +44,7 @@ object fSaveExport: TfSaveExport
       Width = 208
       Flat = True
       GroupIndex = 1
-      Images = ilExport
+      Images = ilImport
       ImageIndex = 1
       ImageWidth = 168
       Layout = blGlyphTop
@@ -54,8 +54,8 @@ object fSaveExport: TfSaveExport
       Left = 184
       Height = 15
       Top = 200
-      Width = 71
-      Caption = 'Current Maze'
+      Width = 63
+      Caption = 'Single Maze'
     end
     object lblMazeBlock: TLabel
       Left = 480
@@ -65,326 +65,12 @@ object fSaveExport: TfSaveExport
       Caption = 'Maze Block'
     end
   end
-  object panCollection: TPanel
-    Left = -3
-    Height = 232
-    Top = 256
-    Width = 744
-    Anchors = [akLeft]
-    BevelOuter = bvSpace
-    ClientHeight = 232
-    ClientWidth = 744
-    Color = 2829099
-    ParentBackground = False
-    ParentColor = False
-    TabOrder = 1
-    object editMazeFile1: TFileNameEdit
-      Left = 61
-      Height = 20
-      Top = 32
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 0
-    end
-    object lblSlot01: TLabel
-      Left = 24
-      Height = 15
-      Top = 35
-      Width = 35
-      Caption = 'Slot 1: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object lblSlot02: TLabel
-      Left = 24
-      Height = 15
-      Top = 70
-      Width = 35
-      Caption = 'Slot 2: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile2: TFileNameEdit
-      Left = 61
-      Height = 20
-      Top = 67
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 1
-    end
-    object editMazeFile3: TFileNameEdit
-      Left = 61
-      Height = 20
-      Top = 102
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 2
-    end
-    object lblSlot03: TLabel
-      Left = 24
-      Height = 15
-      Top = 105
-      Width = 35
-      Caption = 'Slot 3: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile4: TFileNameEdit
-      Left = 61
-      Height = 20
-      Top = 139
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 3
-    end
-    object lblSlot04: TLabel
-      Left = 24
-      Height = 15
-      Top = 142
-      Width = 35
-      Caption = 'Slot 4: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile5: TFileNameEdit
-      Left = 61
-      Height = 20
-      Top = 174
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 4
-    end
-    object lblSlot05: TLabel
-      Left = 24
-      Height = 15
-      Top = 177
-      Width = 35
-      Caption = 'Slot 5: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile6: TFileNameEdit
-      Left = 437
-      Height = 20
-      Top = 32
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 5
-    end
-    object lblSlot06: TLabel
-      Left = 400
-      Height = 15
-      Top = 35
-      Width = 35
-      Caption = 'Slot 6: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object lblSlot07: TLabel
-      Left = 400
-      Height = 15
-      Top = 70
-      Width = 35
-      Caption = 'Slot 7: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile7: TFileNameEdit
-      Left = 437
-      Height = 20
-      Top = 67
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 6
-    end
-    object lblSlot08: TLabel
-      Left = 400
-      Height = 15
-      Top = 105
-      Width = 35
-      Caption = 'Slot 8: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile8: TFileNameEdit
-      Left = 437
-      Height = 20
-      Top = 102
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 7
-    end
-    object lblSlot09: TLabel
-      Left = 400
-      Height = 15
-      Top = 142
-      Width = 35
-      Caption = 'Slot 9: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile9: TFileNameEdit
-      Left = 437
-      Height = 20
-      Top = 139
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 8
-    end
-    object lblSlot10: TLabel
-      Left = 394
-      Height = 15
-      Top = 177
-      Width = 41
-      Caption = 'Slot 10: '
-      Color = 15263976
-      Font.Color = 15263976
-      Font.Height = -12
-      ParentColor = False
-      ParentFont = False
-    end
-    object editMazeFile10: TFileNameEdit
-      Left = 437
-      Height = 20
-      Top = 174
-      Width = 283
-      FilterIndex = 0
-      HideDirectories = False
-      ButtonWidth = 23
-      NumGlyphs = 1
-      Flat = True
-      Color = 6250335
-      Font.Color = 14211288
-      Font.Height = -9
-      MaxLength = 0
-      ParentFont = False
-      TabOrder = 9
-    end
-    object lblTreasureLegend: TLabel
-      Left = 488
-      Height = 15
-      Top = 203
-      Width = 132
-      Caption = 'Slot 9, 10 : treasure rooms'
-      Font.Color = 6863080
-      Font.Style = [fsItalic]
-      ParentFont = False
-    end
-  end
   object btnSave: TBCButton
     Left = 200
     Height = 39
     Top = 512
     Width = 94
-    Action = aSaveMaze
+    Action = aLoadMaze
     StateClicked.Background.Gradient1.StartColor = 6052956
     StateClicked.Background.Gradient1.EndColor = 6052956
     StateClicked.Background.Gradient1.GradientType = gtLinear
@@ -486,7 +172,7 @@ object fSaveExport: TfSaveExport
     Height = 39
     Top = 512
     Width = 94
-    Action = aExportMaze
+    Action = aImportMaze
     StateClicked.Background.Gradient1.StartColor = 6052956
     StateClicked.Background.Gradient1.EndColor = 6052956
     StateClicked.Background.Gradient1.GradientType = gtLinear
@@ -685,26 +371,27 @@ object fSaveExport: TfSaveExport
     TextApplyGlobalOpacity = False
     MemoryUsage = bmuLow
   end
-  object dlgSaveMaze: TSaveDialog
+  object dlgLoadMaze: TSaveDialog
     DefaultExt = '.gmm'
-    Top = 520
+    Left = 16
+    Top = 536
   end
-  object dlgExportMaze: TSaveDialog
-    Left = 40
-    Top = 520
+  object dlgImportMaze: TSaveDialog
+    Left = 56
+    Top = 536
   end
-  object dlgExportBlock: TSaveDialog
-    Left = 128
-    Top = 520
-  end
-  object dlgSaveBlock: TSaveDialog
+  object dlgLoadBlock: TSaveDialog
     DefaultExt = '.gmm'
-    Left = 88
-    Top = 520
+    Left = 104
+    Top = 536
   end
-  object ilExport: TImageList
-    Left = 622
-    Top = 519
+  object dlgImportBlock: TSaveDialog
+    Left = 144
+    Top = 536
+  end
+  object ilImport: TImageList
+    Left = 650
+    Top = 536
     Bitmap = {
       4C7A0200000010000000100000003A0500000000000078DA8595696C545514C7
       6FC1924808847666DE7DF7BE3720B2681A3EA02608424C670A0A74AF2D62B08E
@@ -12123,25 +11810,22 @@ object fSaveExport: TfSaveExport
       BDA5B7F4F63EBEFD1FAB1E67AE
     }
   end
-  object alSaveExport: TActionList
-    Left = 684
-    Top = 520
-    object aSaveMaze: TAction
-      Caption = 'Save'
-      OnExecute = aSaveMazeExecute
+  object alLoadImport: TActionList
+    Left = 704
+    Top = 536
+    object aLoadMaze: TAction
+      Caption = 'Load'
+      OnExecute = aLoadMazeExecute
     end
-    object aExportMaze: TAction
-      Caption = 'Export'
-      OnExecute = aExportMazeExecute
+    object aImportMaze: TAction
+      Caption = 'Import'
     end
-    object aSaveBlock: TAction
-      Caption = 'Save'
+    object aLoadBlock: TAction
+      Caption = 'Load'
       ShortCut = 16467
-      OnExecute = aSaveBlockExecute
     end
-    object aExportBlock: TAction
-      Caption = 'Export'
-      OnExecute = aExportBlockExecute
+    object aImportBlock: TAction
+      Caption = 'Import'
     end
     object aCancel: TAction
       Caption = 'Cancel'
