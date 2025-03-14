@@ -47,6 +47,7 @@ type
     editMazeFile9: TFileNameEdit;
     ilExport: TImageList;
     lblCollection: TLabel;
+    lblPanFormat: TLabel;
     lblSaveExportHint: TLabel;
     lblBlockComposition: TLabel;
     lblTreasureLegend: TLabel;
@@ -138,6 +139,9 @@ begin
   aExportMaze.Enabled := True;
 
   panFormat.Enabled := False;
+
+  btnCancel.Enabled := True;
+  aCancel.Enabled := True;
 end;
 
 procedure TfSaveExport.btnManyMazesClick(Sender: TObject);
@@ -160,7 +164,8 @@ begin
   btnZX_TZX.Enabled := False;
   btnAmstrad_CDT.Enabled := False;
   btnMSX_TSX.Enabled := False;
-
+  btnCancel.Enabled := True;
+  aCancel.Enabled := True;
 end;
 
 procedure TfSaveExport.btnCollectionClick(Sender: TObject);
@@ -179,6 +184,8 @@ begin
   btnMSX_TSX.Enabled := True;
 
   btnZX_TZX.Down := True;
+  btnCancel.Enabled := True;
+  aCancel.Enabled := True;
 
 end;
 
@@ -243,7 +250,7 @@ begin
   else
   begin
     LoadIntoBlock(FMazeFileList, uData.block);
-    verifyResult := VerifyBlock(uData.block, GetSelectedVersion,BlockSize);
+    verifyResult := VerifyBlock(uData.block, GetSelectedVersion, BlockSize);
     case verifyResult of
       -1:   //compile all mazes and verify errors
       begin
@@ -286,7 +293,8 @@ end;
 
 procedure TfSaveExport.aExportCollectionExecute(Sender: TObject);
 begin
-  ShowMessage('Not implemented yet. Coming soon...');
+  ShowMessage(
+    'Not implemented yet. Coming soon...  In the meanwhile, it''s a good idea to use ZX-BlockEditor to create the loadable file manually');
 
 end;
 

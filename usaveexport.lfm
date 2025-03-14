@@ -1,13 +1,13 @@
 object fSaveExport: TfSaveExport
   Left = 470
-  Height = 647
+  Height = 693
   Top = 250
-  Width = 790
+  Width = 814
   Anchors = [akTop, akLeft, akRight]
   BorderStyle = bsNone
   Caption = 'Save/Export'
-  ClientHeight = 647
-  ClientWidth = 790
+  ClientHeight = 693
+  ClientWidth = 814
   Color = 3881787
   Font.Color = 15263976
   OnCreate = FormCreate
@@ -15,11 +15,11 @@ object fSaveExport: TfSaveExport
     Left = 0
     Height = 248
     Top = 0
-    Width = 790
+    Width = 814
     Align = alTop
     BevelOuter = bvNone
     ClientHeight = 248
-    ClientWidth = 790
+    ClientWidth = 814
     Color = 2829099
     ParentBackground = False
     ParentColor = False
@@ -98,18 +98,18 @@ object fSaveExport: TfSaveExport
   object panCollection: TPanel
     Left = -3
     Height = 224
-    Top = 368
-    Width = 803
-    Anchors = [akLeft]
+    Top = 408
+    Width = 819
+    Anchors = [akLeft, akRight]
     BevelOuter = bvSpace
     ClientHeight = 224
-    ClientWidth = 803
+    ClientWidth = 819
     Color = 2829099
     ParentBackground = False
     ParentColor = False
     TabOrder = 1
     object editMazeFile1: TFileNameEdit
-      Left = 61
+      Left = 75
       Height = 20
       Top = 32
       Width = 283
@@ -126,7 +126,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 0
     end
     object lblSlot01: TLabel
-      Left = 24
+      Left = 38
       Height = 15
       Top = 35
       Width = 35
@@ -138,7 +138,7 @@ object fSaveExport: TfSaveExport
       ParentFont = False
     end
     object lblSlot02: TLabel
-      Left = 24
+      Left = 38
       Height = 15
       Top = 70
       Width = 35
@@ -150,7 +150,7 @@ object fSaveExport: TfSaveExport
       ParentFont = False
     end
     object editMazeFile2: TFileNameEdit
-      Left = 61
+      Left = 75
       Height = 20
       Top = 67
       Width = 283
@@ -167,7 +167,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 1
     end
     object editMazeFile3: TFileNameEdit
-      Left = 61
+      Left = 75
       Height = 20
       Top = 102
       Width = 283
@@ -184,7 +184,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 2
     end
     object lblSlot03: TLabel
-      Left = 24
+      Left = 38
       Height = 15
       Top = 105
       Width = 35
@@ -196,7 +196,7 @@ object fSaveExport: TfSaveExport
       ParentFont = False
     end
     object editMazeFile4: TFileNameEdit
-      Left = 61
+      Left = 75
       Height = 20
       Top = 139
       Width = 283
@@ -213,7 +213,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 3
     end
     object lblSlot04: TLabel
-      Left = 24
+      Left = 38
       Height = 15
       Top = 142
       Width = 35
@@ -225,7 +225,7 @@ object fSaveExport: TfSaveExport
       ParentFont = False
     end
     object editMazeFile5: TFileNameEdit
-      Left = 61
+      Left = 75
       Height = 20
       Top = 174
       Width = 283
@@ -242,7 +242,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 4
     end
     object lblSlot05: TLabel
-      Left = 24
+      Left = 38
       Height = 15
       Top = 177
       Width = 35
@@ -271,7 +271,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 5
     end
     object lblSlot06: TLabel
-      Left = 400
+      Left = 426
       Height = 15
       Top = 35
       Width = 35
@@ -283,7 +283,7 @@ object fSaveExport: TfSaveExport
       ParentFont = False
     end
     object lblSlot07: TLabel
-      Left = 400
+      Left = 426
       Height = 15
       Top = 70
       Width = 35
@@ -312,7 +312,7 @@ object fSaveExport: TfSaveExport
       TabOrder = 6
     end
     object lblSlot08: TLabel
-      Left = 400
+      Left = 426
       Height = 15
       Top = 105
       Width = 35
@@ -341,13 +341,13 @@ object fSaveExport: TfSaveExport
       TabOrder = 7
     end
     object lblSlot09: TLabel
-      Left = 400
+      Left = 426
       Height = 15
       Top = 142
       Width = 35
       Caption = 'Slot 9: '
       Color = 15263976
-      Font.Color = 15263976
+      Font.Color = 6863080
       Font.Height = -12
       ParentColor = False
       ParentFont = False
@@ -370,13 +370,13 @@ object fSaveExport: TfSaveExport
       TabOrder = 8
     end
     object lblSlot10: TLabel
-      Left = 394
+      Left = 420
       Height = 15
       Top = 177
       Width = 41
       Caption = 'Slot 10: '
       Color = 15263976
-      Font.Color = 15263976
+      Font.Color = 6863080
       Font.Height = -12
       ParentColor = False
       ParentFont = False
@@ -411,7 +411,7 @@ object fSaveExport: TfSaveExport
     object lblBlockComposition: TLabel
       Left = 21
       Height = 15
-      Top = 4
+      Top = 5
       Width = 758
       Caption = 'Block composition. A loading block is always composed by 10 levels (being 9 and 10 the treasure rooms). Level 1-7 is a special case (unsupported).'
       Font.Color = 6863080
@@ -420,11 +420,12 @@ object fSaveExport: TfSaveExport
     end
   end
   object btnSave: TBCButton
-    Left = 200
+    Left = 224
     Height = 39
-    Top = 600
+    Top = 646
     Width = 94
     Action = aSaveMaze
+    Anchors = [akLeft, akBottom]
     StateClicked.Background.Gradient1.StartColor = 6052956
     StateClicked.Background.Gradient1.EndColor = 6052956
     StateClicked.Background.Gradient1.GradientType = gtLinear
@@ -522,11 +523,12 @@ object fSaveExport: TfSaveExport
     MemoryUsage = bmuLow
   end
   object btnExport: TBCButton
-    Left = 334
+    Left = 358
     Height = 39
-    Top = 600
+    Top = 646
     Width = 94
     Action = aExportMaze
+    Anchors = [akLeft, akBottom]
     StateClicked.Background.Gradient1.StartColor = 6052956
     StateClicked.Background.Gradient1.EndColor = 6052956
     StateClicked.Background.Gradient1.GradientType = gtLinear
@@ -624,11 +626,12 @@ object fSaveExport: TfSaveExport
     MemoryUsage = bmuLow
   end
   object btnCancel: TBCButton
-    Left = 464
+    Left = 488
     Height = 39
-    Top = 600
+    Top = 646
     Width = 94
     Action = aCancel
+    Anchors = [akLeft, akBottom]
     StateClicked.Background.Gradient1.StartColor = 6052956
     StateClicked.Background.Gradient1.EndColor = 6052956
     StateClicked.Background.Gradient1.GradientType = gtLinear
@@ -727,21 +730,22 @@ object fSaveExport: TfSaveExport
   end
   object panFormat: TPanel
     Left = -48
-    Height = 104
+    Height = 144
     Top = 256
-    Width = 848
+    Width = 864
     Align = alCustom
+    Anchors = [akTop, akLeft, akRight]
     BevelOuter = bvNone
-    ClientHeight = 104
-    ClientWidth = 848
+    ClientHeight = 144
+    ClientWidth = 864
     Color = 2829099
     ParentBackground = False
     ParentColor = False
     TabOrder = 2
     object btnMSX: TSpeedButton
-      Left = 51
+      Left = 53
       Height = 73
-      Top = 16
+      Top = 48
       Width = 126
       AutoSize = True
       Caption = 'Raw file'
@@ -1452,9 +1456,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnMSX_DSK: TSpeedButton
-      Left = 182
+      Left = 183
       Height = 73
-      Top = 16
+      Top = 48
       Width = 126
       AutoSize = True
       Caption = 'DSK version'
@@ -2164,9 +2168,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnZX: TSpeedButton
-      Left = 307
+      Left = 311
       Height = 88
-      Top = 16
+      Top = 48
       Width = 111
       Caption = 'Raw file'
       Color = 5987163
@@ -2601,9 +2605,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnAmstrad: TSpeedButton
-      Left = 417
+      Left = 422
       Height = 73
-      Top = 16
+      Top = 48
       Width = 88
       AutoSize = True
       Caption = 'Raw file'
@@ -3085,9 +3089,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnZX_TZX: TSpeedButton
-      Left = 508
-      Height = 90
-      Top = 16
+      Left = 640
+      Height = 88
+      Top = 48
       Width = 111
       Caption = 'TZX Collection'
       Flat = True
@@ -3521,9 +3525,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnAmstrad_CDT: TSpeedButton
-      Left = 749
+      Left = 757
       Height = 73
-      Top = 16
+      Top = 48
       Width = 80
       Caption = 'CDT Collection'
       Flat = True
@@ -4004,9 +4008,9 @@ object fSaveExport: TfSaveExport
       Spacing = 0
     end
     object btnMSX_TSX: TSpeedButton
-      Left = 618
+      Left = 512
       Height = 73
-      Top = 16
+      Top = 48
       Width = 126
       Caption = 'TSX Collection'
       Flat = True
@@ -4714,33 +4718,40 @@ object fSaveExport: TfSaveExport
       Layout = blGlyphTop
       Spacing = 0
     end
+    object lblPanFormat: TLabel
+      Left = 319
+      Height = 15
+      Top = 16
+      Width = 238
+      Caption = 'EXPORT FORMAT (ignored for normal saving)'
+    end
   end
   object dlgSaveMaze: TSaveDialog
     DefaultExt = '.gmf'
     Filter = 'Gauntlet Maze File|*.gmf'
     Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing, ofViewDetail]
-    Top = 581
+    Top = 633
   end
   object dlgExportMaze: TSaveDialog
     Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing, ofViewDetail]
     Left = 40
-    Top = 581
+    Top = 633
   end
   object dlgExportBlock: TSaveDialog
     Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing, ofViewDetail]
     Left = 128
-    Top = 581
+    Top = 633
   end
   object dlgSaveBlock: TSaveDialog
     DefaultExt = '.gmb'
     Filter = 'Gauntlet Maze Block|*.gmb'
     Options = [ofOverwritePrompt, ofPathMustExist, ofEnableSizing, ofViewDetail]
     Left = 88
-    Top = 581
+    Top = 633
   end
   object ilExport: TImageList
     Left = 622
-    Top = 580
+    Top = 632
     Bitmap = {
       4C7A030000001000000010000000770700000000000078DAC595795094E71DC7
       1F49C94C53273608EC7BEC621A636CC7A633B69D315A8CB2CB72DF14288AB82E
@@ -20279,7 +20290,7 @@ object fSaveExport: TfSaveExport
   end
   object alSaveExport: TActionList
     Left = 684
-    Top = 581
+    Top = 633
     object aSaveMaze: TAction
       Caption = 'Save'
       Enabled = False
@@ -20301,6 +20312,7 @@ object fSaveExport: TfSaveExport
     end
     object aCancel: TAction
       Caption = 'Cancel'
+      Enabled = False
       OnExecute = aCancelExecute
     end
     object aExportCollection: TAction
