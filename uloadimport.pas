@@ -20,10 +20,10 @@ type
     aLoadBlock: TAction;
     aLoadMaze: TAction;
     btnCancel: TBCButton;
-    btnExport: TBCButton;
+    btnImport: TBCButton;
     btnManyMazes: TSpeedButton;
     btnOneMaze: TSpeedButton;
-    btnSave: TBCButton;
+    btnLoad: TBCButton;
     dlgImportBlock: TSaveDialog;
     dlgImportMaze: TSaveDialog;
     dlgLoadBlock: TSaveDialog;
@@ -33,15 +33,16 @@ type
     lblOneMaze: TLabel;
     panSelection: TPanel;
     procedure aCancelExecute(Sender: TObject);
+    procedure aLoadBlockExecute(Sender: TObject);
     procedure aLoadMazeExecute(Sender: TObject);
     procedure btnManyMazesClick(Sender: TObject);
     procedure btnOneMazeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
-    FCurrentMaze: TGauntMaze;
+    //FCurrentMaze: TGauntMaze;
     FMazeFileList: TMazeFileList;
   public
-    procedure SetCurrentMaze(AMaze: TGauntMaze);
+    //procedure SetCurrentMaze(AMaze: TGauntMaze);
 
   end;
 
@@ -60,10 +61,34 @@ begin
   self.Close;
 end;
 
+procedure TfLoadImport.aLoadBlockExecute(Sender: TObject);
+var
+  fs: TFileStream = nil;
+begin
+  if dlgLoadBlock.Execute then;
+  begin
+    try
+      try
+        fs := TFileStream.Create(dlgLoadBlock.FileName, fmOpenRead);
+        uData.LoadBlock(fs, uData.block);
+        self.ModalResult := mrAll;
+      except
+        on E: Exception do
+        begin
+          ShowMessage('Error loading maze block' + dlgLoadBlock.FileName +
+            ': ' + E.Message);
+          self.ModalResult := mrNo;
+        end;
+      end;
+    finally
+    end;
+  end;
+end;
+
 procedure TfLoadImport.aLoadMazeExecute(Sender: TObject);
 var
   Maze: TGauntMaze;
-  fs: TFileStream;
+  fs: TFileStream = nil;
 begin
   if dlgLoadMaze.Execute then
   begin
@@ -72,7 +97,7 @@ begin
       try
         fs := TFileStream.Create(dlgLoadMaze.FileName, fmOpenRead);
         Maze.FromFileStream(fs);
-        Maze.FileName:=fs.FileName;
+        Maze.FileName := dlgLoadMaze.FileName;
         uData.block[0] := Maze;
         self.ModalResult := mrOk;
       except
@@ -83,24 +108,22 @@ begin
         end;
       end;
     finally
-      fs.Free;
+      if assigned(fs) then fs.Free;
     end;
-
   end;
-
 end;
 
 procedure TfLoadImport.btnManyMazesClick(Sender: TObject);
 begin
-  btnSave.Action := aImportMaze;
-  btnExport.Action := aImportBlock;
+  btnLoad.Action := aLoadBlock;
+  btnImport.Action := aImportBlock;
 end;
 
 procedure TfLoadImport.btnOneMazeClick(Sender: TObject);
 begin
   //panCollection.Enabled := False;
-  btnSave.Action := aLoadMaze;
-  btnExport.Action := aImportMaze;
+  btnLoad.Action := aLoadMaze;
+  btnImport.Action := aImportMaze;
 end;
 
 procedure TfLoadImport.FormCreate(Sender: TObject);
@@ -109,9 +132,9 @@ begin
   btnOneMaze.Click;
 end;
 
-procedure TfLoadImport.SetCurrentMaze(AMaze: TGauntMaze);
+{procedure TfLoadImport.SetCurrentMaze(AMaze: TGauntMaze);
 begin
   FCurrentMaze := AMaze;
 end;
-
+ }
 end.

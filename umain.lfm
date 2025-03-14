@@ -545,12 +545,6 @@ object fMain: TfMain
       Hint = 'Exit'
       ImageIndex = 1
     end
-    object aSaveMaze: TFileSaveAs
-      Category = 'File'
-      Caption = 'Save &As ...'
-      Hint = 'Save As'
-      ShortCut = 16467
-    end
     object aStyle1: TAction
       Caption = 'Style &1'
       GroupIndex = 1
@@ -626,6 +620,10 @@ object fMain: TfMain
     object aShowMazeTools: TAction
       Caption = 'aShowMazeTools'
       OnExecute = aShowMazeToolsExecute
+    end
+    object aSave: TAction
+      ShortCut = 16467
+      OnExecute = aSaveExecute
     end
   end
   object BCEPanelsOpt: TBCExpandPanels

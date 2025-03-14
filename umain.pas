@@ -18,6 +18,7 @@ type
   { TfMain }
 
   TfMain = class(TForm)
+    aSave: TAction;
     aShowMazeTools: TAction;
     aGenerateDFSMaze: TAction;
     aLoadImport: TAction;
@@ -53,7 +54,6 @@ type
     cypanelMain: TCyPanel;
     cyFlyingContainer1: TcyFlyingContainer;
     aExit: TFileExit;
-    aSaveMaze: TFileSaveAs;
     ilStyles: TImageList;
     ilTools: TImageList;
     leName: TLabeledEdit;
@@ -73,6 +73,7 @@ type
     procedure aGoEditNameExecute(Sender: TObject);
     procedure aLoadImportExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
+    procedure aSaveExecute(Sender: TObject);
     procedure aSaveExportExecute(Sender: TObject);
     procedure aShowMazeToolsExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
@@ -93,7 +94,7 @@ type
     procedure leNameKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure tabsMainTabChanged(Sender: TObject);
     procedure tabsMainTabPlusClick(Sender: TObject);
-    procedure timerMainTimer(Sender: TObject);
+    //procedure timerMainTimer(Sender: TObject);
     procedure CreateOptionPanels(AContainer: TWinControl);
     procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
@@ -342,11 +343,11 @@ begin
   self.AddNewMaze;
 end;
 
-procedure TfMain.timerMainTimer(Sender: TObject);
+{procedure TfMain.timerMainTimer(Sender: TObject);
 begin
   dgMap.Repaint;
 end;
-
+ }
 procedure TfMain.dgMapDrawCell(Sender: TObject; aCol, aRow: integer;
   aRect: TRect; aState: TGridDrawState);
 var
@@ -636,12 +637,11 @@ end;
 
 procedure TfMain.aLoadImportExecute(Sender: TObject);
 var
-  od: TOpenDialog;
   i: integer;
 begin
-  fLoadImport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
+  {fLoadImport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
     tabsMain.TabIndex).TabObject));
-
+   }
   case fLoadImport.ShowModal of
     mrOk:                    //one maze loaded or imported
     begin
@@ -656,6 +656,17 @@ begin
     mrAll:                   //a whole block has been loaded or imported
     begin
       //take it from uData.block
+      for i := 0 to length(block) - 1 do
+      begin
+        tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[i];
+        tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
+          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+        tabsMain.GetTabData(tabsMain.TabIndex).TabHint :=
+          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
+        tabsMain.Repaint;
+        SyncTab(tabsMain);
+        dgMap.Repaint;
+      end;
     end;
   end;
 
@@ -680,10 +691,50 @@ begin
   end;
 end;
 
+procedure TfMain.aSaveExecute(Sender: TObject);
+var
+  fs: TFileStream;
+begin
+  if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName = '' then
+  begin
+    aSaveExport.Execute;
+  end
+  else
+  begin
+    try
+      try
+        fs := TFileStream.Create(
+          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName,
+          fmCreate);
+        TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).ToFileStream(fs);
+      except
+        on E: Exception do
+        begin
+          ShowMessage('Error while saving file ' + TGauntMaze(
+            tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName +
+            ': ' + E.Message);
+        end;
+      end;
+    finally
+      fs.Free;
+    end;
+  end;
+end;
+
 procedure TfMain.aSaveExportExecute(Sender: TObject);
 begin
-  fSaveExport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
-    tabsMain.TabIndex).TabObject));
+  //check if there is at least a single maze open
+  if tabsMain.TabIndex = -1 then
+  begin
+    fSaveExport.SetCurrentMaze(nil);
+    fSaveExport.btnManyMazes.Click;
+    fSaveExport.btnManyMazes.Down := True;
+  end
+  else
+  begin
+    fSaveExport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
+      tabsMain.TabIndex).TabObject));
+  end;
   if fSaveExport.ShowModal = mrOk then
   begin
     tabsMain.GetTabData(

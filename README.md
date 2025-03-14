@@ -28,13 +28,28 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Fix starting of "draw gate" command
 * Add an "autofix" feature for too-complex maps (e.g. removing a stroke randomly)
 * Start position not correctly recalled from disk
+* Add file extensions for native saving of maze and block
+    * Maze file (native): .gmf
+    * Maze block file (native): .gmb
+    * Export file: .*
+    * Export block: .*
+* Add "Overwrite file?"
+* Add CTRL+S to save current file if has already a filename
+    * Add path to the Maze properties
+- Fix memory leaks
 - Support for the ZX Spectrum version
-- Database persistence
+    -export block
+    -export TZX
+    -import block
+- Support for the Amstrad CPC version
+    -export block
+    -export CDT
+- Apply styles on the zoom
+    -import block    
 - Preview based on WebMSX
 - Undo/Redo
-- Fix memory leaks
+- Database persistence
 - Copy and Paste regions between mazes or in a maze
-- Apply styles on the zoom
 - Fix font resolution issues on Linux
 - Check compilation on Mac
 - Use TFPGMap to implement the index-pattern map.
@@ -43,8 +58,6 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Change TMemoryBuffer copy for a direct method
 - Check max block size (#d000-#de7f). The MSX DSK version copies things at #de80 and it can break the last block. MSX ROM/TZX and ZX/CPC have different limits. Take the biggest known block as reference.
 - Trap block tool must toggle trap-notrap
-- Add "Overwrite file?"
-- Add file extensions for native saving of maze and block
-- Add CTRL+S to save current file if has already a filename
-    - Add path to the Maze properties
-
+- Add SAVE AS or DUPLICATE (I prefer the latter)
+- Use local config to avoid writing in protected areas
+- Investigate the unknown flag

@@ -65,7 +65,7 @@ object fLoadImport: TfLoadImport
       Caption = 'Maze Block'
     end
   end
-  object btnSave: TBCButton
+  object btnLoad: TBCButton
     Left = 200
     Height = 39
     Top = 512
@@ -167,7 +167,7 @@ object fLoadImport: TfLoadImport
     TextApplyGlobalOpacity = False
     MemoryUsage = bmuLow
   end
-  object btnExport: TBCButton
+  object btnImport: TBCButton
     Left = 334
     Height = 39
     Top = 512
@@ -372,20 +372,30 @@ object fLoadImport: TfLoadImport
     MemoryUsage = bmuLow
   end
   object dlgLoadMaze: TSaveDialog
-    DefaultExt = '.gmm'
+    Title = 'Load Maze'
+    DefaultExt = '.,gmf'
+    Filter = 'Gauntlet Maze File|*.gmf'
+    Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 16
     Top = 536
   end
   object dlgImportMaze: TSaveDialog
+    Title = 'Import Maze'
+    Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 56
     Top = 536
   end
   object dlgLoadBlock: TSaveDialog
-    DefaultExt = '.gmm'
+    Title = 'Load Maze Block'
+    DefaultExt = '.gmb'
+    Filter = 'Gauntlet Maze Block|*.gmb'
+    Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 104
     Top = 536
   end
   object dlgImportBlock: TSaveDialog
+    Title = 'Import Maze Block'
+    Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 144
     Top = 536
   end
@@ -11823,6 +11833,7 @@ object fLoadImport: TfLoadImport
     object aLoadBlock: TAction
       Caption = 'Load'
       ShortCut = 16467
+      OnExecute = aLoadBlockExecute
     end
     object aImportBlock: TAction
       Caption = 'Import'
