@@ -590,25 +590,27 @@ var
   i: integer;
   f: integer;
 begin
-  if w then f := 0   //no wall
-  else
-    f := $05;      //vertical wall
-
-  for i := 0 to 31 do
+  if w <> self.FHorzWrap then
   begin
-    self.MapData[0, i] := f;
+    if w then f := 0   //no wall
+    else
+      f := $05;      //vertical wall
+    for i := 1 to 31 do
+    begin
+      self.MapData[0, i] := f;
+    end;
+    if not w then
+    begin
+      //add also the corner
+      self.MapData[0, 0] := $06;
+    end
+    else
+    begin
+      //add regular horz block
+      self.MapData[0, 0] := $0a;
+    end;
   end;
 
-  if not w then
-  begin
-    //add also the corner
-    self.MapData[0, 0] := $06;
-  end
-  else
-  begin
-    //add regular horz block
-    self.MapData[0, 0] := $0a;
-  end;
   self.FHorzWrap := w;
 
 end;
@@ -1047,7 +1049,6 @@ var
   i: integer;
   xpos, ypos: integer;
 begin
-
   try
     self.Name := fs.ReadAnsiString;
     xpos := fs.ReadByte;
@@ -1128,8 +1129,56 @@ begin
 end;
 
 procedure ImportBlock(fs: TFileStream; var ABlock: TGauntBlock; AType: TGauntVersion);
+var
+  Maze: TGauntMaze = nil;
+  i: integer;
+  s: word;
+  sizes: array [0..9] of word;
 begin
   //Result[0] := nil;
+  try
+    try
+      //skip loader according to version
+      case AType of
+        gvMSX_DSK:
+          fs.Seek(7 + length(HEAD_DSK), TSeekOrigin.soBeginning);
+        gvMSX:
+          fs.Seek(length(HEAD_DD_TSX), TSeekOrigin.soBeginning);
+        gvZX:
+          fs.Seek(2 + length(HEAD_DD_TZX), TSeekOrigin.soBeginning);
+        gvCPC:
+          fs.Seek(length(HEAD_DD_CDT), TSeekOrigin.soBeginning);
+      end;
+      //read the table of sizes
+      for i := 0 to 9 do
+      begin
+        sizes[i] := fs.ReadByte + 256 * fs.ReadByte;
+      end;
+      //read the 3 dummy bytes
+      fs.ReadByte;
+      fs.ReadByte;
+      fs.ReadByte;
+
+      //read the mazes and store them into the Block
+      for i := 0 to 9 do
+      begin
+        Maze := TGauntMaze.Create(nil);
+        Maze.FBuffer.CopyFrom(fs, sizes[i]);
+        Maze.FSize := sizes[i];
+        Maze.DecodeMaze;
+        ABlock[i] := Maze;
+      end;
+
+
+    except
+      on E: Exception do
+      begin
+        raise;
+      end;
+    end;
+  finally
+  end;
+
 end;
 
 procedure SaveBlock(fs: TFileStream; var ABlock: TGauntBlock);

@@ -54,6 +54,7 @@ type
     procedure btnManyMazesClick(Sender: TObject);
     procedure btnOneMazeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    function GetSelectedVersion(): TGauntVersion;
   private
     FMazeFileList: TMazeFileList;
   public
@@ -75,14 +76,34 @@ begin
 end;
 
 procedure TfLoadImport.aImportBlockExecute(Sender: TObject);
+var
+  fs: TFileStream = nil;
+  Maze: TGauntMaze;
 begin
-  ShowMessage(
-    'Not implemented yet. Coming soon...  In the meanwhile, it''s a good idea to use ZX-BlockEditor to rip blocks manually');
+  if dlgImportBlock.Execute then
+  begin
+    try
+      try
+        fs := TFileStream.Create(dlgImportBlock.FileName, fmOpenRead);
+        uData.ImportBlock(fs, uData.block, GetSelectedVersion);
+        self.ModalResult := mrAll;
+      except
+        on E: Exception do
+        begin
+          ShowMessage('Error importing maze block' + dlgImportBlock.FileName +
+            ': ' + E.Message);
+          self.ModalResult := mrNo;
+        end;
+      end;
+    finally
+    end;
+  end;
 end;
 
 procedure TfLoadImport.aImportCollectionExecute(Sender: TObject);
 begin
-  ShowMessage('Not implemented yet. Coming soon...');
+  ShowMessage(
+    'Not implemented yet. Coming soon... In the meanwhile, it''s a good idea to use ZX-BlockEditor to rip blocks manually');
 end;
 
 procedure TfLoadImport.aImportMazeExecute(Sender: TObject);
@@ -236,6 +257,30 @@ procedure TfLoadImport.FormCreate(Sender: TObject);
 begin
   btnOneMaze.Down := True;
   btnOneMaze.Click;
+end;
+
+function TfLoadImport.GetSelectedVersion(): TGauntVersion;
+begin
+  //gvMSX_DSK, gvMSX, gvMSX_TSX, gvZX_TZX, gvCPC_TZX, gvZX, gvCPC
+  if btnMSX.Down then
+    Result := gvMSX
+  else
+  if btnMSX_DSK.Down then
+    Result := gvMSX_DSK
+  else
+  if btnZX.Down then
+    Result := gvZX
+  else
+  if btnAmstrad.Down then
+    Result := gvCPC
+  else
+  if btnZX_TZX.Down then
+    Result := gvZX_TZX
+  else
+  if btnAmstrad_CDT.Down then
+    Result := gvCPC_TZX
+  else
+    Result := gvMSX_TSX;
 end;
 
 end.
