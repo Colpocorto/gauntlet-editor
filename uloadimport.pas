@@ -33,10 +33,10 @@ type
     btnLoad: TBCButton;
     btnZX: TSpeedButton;
     btnZX_TZX: TSpeedButton;
-    dlgImportBlock: TSaveDialog;
-    dlgImportMaze: TSaveDialog;
-    dlgLoadBlock: TSaveDialog;
-    dlgLoadMaze: TSaveDialog;
+    dlgImportBlock: TOpenDialog;
+    dlgImportMaze: TOpenDialog;
+    dlgLoadBlock: TOpenDialog;
+    dlgLoadMaze: TOpenDialog;
     ilImport: TImageList;
     lblCollection: TLabel;
     lblMazeBlock: TLabel;
@@ -86,8 +86,32 @@ begin
 end;
 
 procedure TfLoadImport.aImportMazeExecute(Sender: TObject);
+var
+  fs: TFileStream = nil;
+  Maze: TGauntMaze;
 begin
-  ShowMessage('Not implemented yet. Coming soon...');
+
+  if dlgImportMaze.Execute then
+  begin
+    Maze := TGauntMaze.Create(self);
+    try
+      try
+        fs := TFileStream.Create(dlgImportMaze.FileName, fmOpenRead);
+        Maze.ImportFromFileStream(fs);
+        uData.block[0] := Maze;
+        self.ModalResult := mrOk;
+      except
+        on E: Exception do
+        begin
+          ShowMessage('Error importing maze block' + dlgLoadBlock.FileName +
+            ': ' + E.Message);
+          self.ModalResult := mrNo;
+        end;
+      end;
+    finally
+      if assigned(fs) then fs.Free;
+    end;
+  end;
 end;
 
 procedure TfLoadImport.aLoadBlockExecute(Sender: TObject);

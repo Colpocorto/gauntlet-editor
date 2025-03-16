@@ -4392,20 +4392,20 @@ object fLoadImport: TfLoadImport
       Caption = 'IMPORT FORMAT (ignored for normal loading)'
     end
   end
-  object dlgLoadMaze: TSaveDialog
+  object dlgLoadMaze: TOpenDialog
     Title = 'Load Maze'
     DefaultExt = '.,gmf'
     Filter = 'Gauntlet Maze File|*.gmf'
     Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Top = 400
   end
-  object dlgImportMaze: TSaveDialog
+  object dlgImportMaze: TOpenDialog
     Title = 'Import Maze'
     Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 40
     Top = 400
   end
-  object dlgLoadBlock: TSaveDialog
+  object dlgLoadBlock: TOpenDialog
     Title = 'Load Maze Block'
     DefaultExt = '.gmb'
     Filter = 'Gauntlet Maze Block|*.gmb'
@@ -4413,7 +4413,7 @@ object fLoadImport: TfLoadImport
     Left = 88
     Top = 400
   end
-  object dlgImportBlock: TSaveDialog
+  object dlgImportBlock: TOpenDialog
     Title = 'Import Maze Block'
     Options = [ofPathMustExist, ofFileMustExist, ofEnableSizing, ofViewDetail]
     Left = 128

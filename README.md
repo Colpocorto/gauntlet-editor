@@ -36,6 +36,9 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Add "Overwrite file?"
 * Add CTRL+S to save current file if has already a filename
     * Add path to the Maze properties
+* Check max block size (#d000-#de7f). The MSX DSK version copies things at #de80 and it can break the last block. MSX ROM/TZX and ZX/CPC have different limits. Take the biggest known block as reference.
+* Investigate the unknown flag
+* Check load/import dialogs (they have SAVE button)
 - Fix memory leaks
 - Support for the ZX Spectrum version
     -export block
@@ -44,8 +47,8 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Support for the Amstrad CPC version
     -export block
     -export CDT
-- Apply styles on the zoom
     -import block    
+- Apply styles on the zoom
 - Preview based on WebMSX
 - Undo/Redo
 - Database persistence
@@ -56,8 +59,7 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Fix "modified" glyph of TATTabs
     - Add "modified" handling
 - Change TMemoryBuffer copy for a direct method
-- Check max block size (#d000-#de7f). The MSX DSK version copies things at #de80 and it can break the last block. MSX ROM/TZX and ZX/CPC have different limits. Take the biggest known block as reference.
 - Trap block tool must toggle trap-notrap
 - Add SAVE AS or DUPLICATE (I prefer the latter)
 - Use local config to avoid writing in protected areas
-- Investigate the unknown flag
+- Add the missing flag: choose one EXIT only 

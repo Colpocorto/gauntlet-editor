@@ -6,6 +6,16 @@
   APPDATA_DIR = '.gauntlet_editor/';
   STYLES_OFFSET = $100;    //because of the trap-bind bit a set can reach $B6
   TRAP_OFFSET = $80;
+  SearchDirs: array [0..7] of TSearchDir = (
+    (colInc: 0; rowInc: -1; byteCode: $00),              //UP
+    (colInc: 1; rowInc: 0; byteCode: $40),               //RIGHT
+    (colInc: 0; rowInc: 1; byteCode: $80),               //DOWN
+    (colInc: -1; rowInc: 0; byteCode: $c0),              //LEFT
+    (colInc: 1; rowInc: -1; byteCode: $20),             //UP-RIGHT
+    (colInc: 1; rowInc: 1; byteCode: $60),               //DOWN-RIGHT
+    (colInc: -1; rowInc: 1; byteCode: $a0),              //DOWN-LEFT
+    (colInc: -1; rowInc: -1; byteCode: $e0)               //UP-LEFT
+    );
   gauntStyles: array[0..7] of TGauntStyle = (
     (id: 0; Name: 'Style 1'; desc: 'Red/Yellow, chess pattern'),
     (id: 1; Name: 'Style 2'; desc: 'Dark Green/Green, brick pattern'),

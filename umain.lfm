@@ -338,6 +338,7 @@ object fMain: TfMain
     object cbWrapV: TplCheckBox
       Left = 680
       Height = 17
+      Hint = 'Allow the map to wrap vertically (a horizontal wall will remain)'
       Top = 8
       Width = 121
       Transparent = True
@@ -346,6 +347,7 @@ object fMain: TfMain
       Font.Color = clWhite
       ParentColor = False
       ParentFont = False
+      ShowHint = True
       TabOrder = 1
       TabStop = True
       OnClick = cbWrapVClick
@@ -353,6 +355,7 @@ object fMain: TfMain
     object cbWrapH: TplCheckBox
       Left = 680
       Height = 17
+      Hint = 'Wrap the maze horizontally (the player can loop the ''infinite'' map)'
       Top = 34
       Width = 121
       Transparent = True
@@ -361,6 +364,7 @@ object fMain: TfMain
       Font.Color = clWhite
       ParentColor = False
       ParentFont = False
+      ShowHint = True
       TabOrder = 2
       TabStop = True
       OnClick = cbWrapHClick
@@ -528,6 +532,23 @@ object fMain: TfMain
       ImageWidth = 32
       Layout = blGlyphTop
       ParentFont = False
+    end
+    object cbOneExit: TplCheckBox
+      Left = 815
+      Height = 17
+      Hint = 'If there are more than one EXIT and this flag is checked, all exits but one will be randomly discarded'
+      Top = 34
+      Width = 121
+      Transparent = True
+      Caption = 'Keep one exit only'
+      Color = 3092271
+      Font.Color = clWhite
+      ParentColor = False
+      ParentFont = False
+      ShowHint = True
+      TabOrder = 5
+      TabStop = True
+      OnClick = cbOneExitClick
     end
   end
   object appProp: TApplicationProperties

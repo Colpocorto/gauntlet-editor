@@ -12,7 +12,6 @@ uses
 type
   TGauntMap = array[0..31, 0..31] of byte;
   TLayer = (background, objects, positions);
-  TGauntTraceDir = (up, up_left, right, down_right, down, down_left, left, up_right);
   TSearchTraceType = (sttWall, sttTrapWall, sttGateD, sttGateV, sttExit);
   TGauntVersion = (gvMSX_DSK, gvMSX, gvMSX_TSX, gvZX_TZX, gvCPC_TZX, gvZX, gvCPC
     );
@@ -24,19 +23,21 @@ type
   end;
   TCustomGauntTraceCmd = class abstract (TObject);
 
-  TGauntTrace = class(TCustomGauntTraceCmd)
-    dir: TGauntTraceDir;
-    steps: smallint;
-  end;
-
   TProcessResult = specialize TFPGMap<integer, string>;
   TMazeFileList = specialize TFPGMap<integer, TControl>;
+
+  TSearchDir = record
+    colInc: smallint;
+    rowInc: smallint;
+    byteCode: byte;
+  end;
 
   TGauntMaze = class(TComponent)
   private
     FSize: integer;  //0-511
     FHorzWrap: boolean;
     FVertWrap: boolean;
+    FOneExit: boolean;
     FStunPlayers: boolean;
     FHurtPlayers: boolean;
     FName: string;
@@ -65,6 +66,7 @@ type
     function CountConsecutiveSpaces(offset: integer): integer;
     function CountConsecutiveObjects(offset: integer; Data: byte): integer;
     function AnyObjectsLeft(offset: integer): boolean;
+    procedure DecodeMaze;
   public
     MapData: TGauntMap;
     ItemData: TGauntMap;
@@ -85,11 +87,14 @@ type
     procedure SetVertWrap(w: boolean);
     function GetHorzWrap(): boolean;
     function GetVertWrap(): boolean;
+    function GetOneExit(): boolean;
+    procedure SetOneExit(AValue: boolean);
     procedure InitMapData;
     procedure InitItemData;
     procedure InitVisitedData;
     procedure ToFileStream(fs: TFileStream);
     procedure FromFileStream(fs: TFileStream);
+    procedure ImportFromFileStream(fs: TFileStream);
     procedure ExportToFileStream(fs: TFileStream);
     function ProcessMap: integer;
     procedure SetPlayerPos(col: byte; row: byte);
@@ -99,6 +104,7 @@ type
     procedure HorzMirror;
     procedure VertMirror;
     procedure UpdateChecksum(var CheckSum: integer);
+
 
   end;
 
@@ -160,6 +166,7 @@ begin
   self.FStyle := gauntStyles[0];
   self.FHorzWrap := False;
   self.FVertWrap := False;
+  self.FOneExit := False;
   self.FStunPlayers := False;
   self.FHurtPlayers := False;
   self.Fid := GetUUID;
@@ -233,8 +240,6 @@ begin
     Exit;
   end;
 
-
-
   Result := ObjectLayerSize + TraceLayerSize + 4;
   //Set header bytes
   FBuffer.Seek(0, TSeekOrigin.soBeginning);
@@ -244,6 +249,7 @@ begin
   tmpbyte := 0;
   if self.FHorzWrap then tmpbyte := tmpbyte + $80;
   if self.FVertWrap then tmpbyte := tmpbyte + $40;
+  if self.FOneExit then tmpbyte := tmpbyte + $04;
   if self.FStunPlayers then tmpbyte := tmpbyte + $02;
   if self.FHurtPlayers then tmpbyte := tmpbyte + $01;
   FBuffer.WriteByte(tmpbyte);
@@ -373,11 +379,6 @@ end;
 
 function TGauntMaze.FindTraces(Atype: TSearchTraceType): integer;
 type
-  TSearchDir = record
-    colInc: smallint;
-    rowInc: smallint;
-    byteCode: byte;
-  end;
 
   TTraceStroke = record
     dir: TSearchDir;
@@ -389,17 +390,6 @@ type
     Yorigin: byte;
     strokes: array of TTraceStroke;
   end;
-const
-  SearchDirs: array [0..7] of TSearchDir = (
-    (colInc: 0; rowInc: -1; byteCode: $00),              //UP
-    (colInc: 1; rowInc: 0; byteCode: $40),               //RIGHT
-    (colInc: 0; rowInc: 1; byteCode: $80),               //DOWN
-    (colInc: -1; rowInc: 0; byteCode: $c0),              //LEFT
-    (colInc: 1; rowInc: -1; byteCode: $20),             //UP-RIGHT
-    (colInc: 1; rowInc: 1; byteCode: $60),               //DOWN-RIGHT
-    (colInc: -1; rowInc: 1; byteCode: $a0),              //DOWN-LEFT
-    (colInc: -1; rowInc: -1; byteCode: $e0)               //UP-LEFT
-    );
 var
   row, col: integer;
   searchingRow, searchingCol: integer;
@@ -628,6 +618,16 @@ begin
   self.FVertWrap := w;
 end;
 
+function TGauntMaze.GetOneExit(): boolean;
+begin
+  Result := self.FOneExit;
+end;
+
+procedure TGauntMaze.SetOneExit(AValue: boolean);
+begin
+  self.FOneExit := AValue;
+end;
+
 function TGauntMaze.GetHorzWrap(): boolean;
 begin
   Result := self.FHorzWrap;
@@ -815,6 +815,7 @@ begin
     fs.WriteByte(self.GetPlayerPos.Y);
     fs.WriteByte(Ord(self.FHorzWrap));
     fs.WriteByte(Ord(self.FVertWrap));
+    fs.WriteByte(Ord(self.FOneExit));
     fs.WriteByte(Ord(self.FHurtPlayers));
     fs.WriteByte(Ord(self.FStunPlayers));
     fs.WriteByte(self.FStyle.id);
@@ -826,7 +827,219 @@ begin
     on E: Exception do GauntDebugLn('Error saving maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);
   end;
-  //fs.Free;
+end;
+
+procedure TGauntMaze.ImportFromFileStream(fs: TFileStream);
+begin
+  //read the file
+  try
+    try
+      self.FBuffer.Seek(0, TSeekOrigin.soBeginning);
+      fs.Seek(0, TSeekOrigin.soBeginning);
+      self.FBuffer.CopyFrom(fs, fs.Size);
+    except
+      on E: Exception do raise;
+    end;
+  finally
+  end;
+  //decode the buffer
+  self.DecodeMaze;
+end;
+
+procedure TGauntMaze.DecodeMaze;
+var
+  i: integer;
+  TempByte: byte;
+  WallSize: byte;
+  ObjectLayerSize: integer;
+  Buffer: pbyte;
+
+
+  procedure DecodeWalls;
+  var
+    x: byte = 0;
+    y: byte = 0;
+    WallCount: byte;
+    CurrentPat: byte = $10;
+
+    function SameCmdInARow(index: integer): boolean;
+    begin
+      if (index - 4) > WallSize - 1 then
+        Result := False
+      else
+      if (Buffer[index] and $e0) = (Buffer[index + 1] and $e0) then
+        Result := True
+      else
+        Result := False;
+    end;
+
+    procedure SetOrigin(Ax, Ay: byte; Acmd: byte);
+    begin
+      x := Ax;
+      y := Ay;
+      case Acmd of
+        $e0:
+        begin
+          self.MapData[x, y] := $10;
+          CurrentPat := $10;
+        end;
+        $c0:
+        begin
+          self.MapData[x, y] := $90;
+          CurrentPat := $90;
+        end;
+        $80:
+        begin
+          self.MapData[x, y] := $11;
+          CurrentPat := $11;
+        end;
+        $40:
+        begin
+          self.MapData[x, y] := $12;
+          CurrentPat := $12;
+        end;
+        $20:
+        begin
+          self.MapData[x, y] := $36;
+          CurrentPat := $36;
+        end;
+      end;
+      i := i + 2;
+    end;
+
+    procedure DrawCmd(Acmd: byte; Pattern: byte);
+    var
+      c: byte;
+      f: byte;
+      SD: TSearchDir;
+    begin
+      for f := 0 to length(SearchDirs) - 1 do
+      begin
+        if SearchDirs[f].byteCode = Acmd and $e0 then
+        begin
+          SD := SearchDirs[f];
+          break;
+        end;
+      end;
+      for c := 0 to Acmd and $1f do
+      begin
+        x := x + SD.colInc;
+        y := y + SD.rowInc;
+        self.MapData[x, y] := pattern;
+      end;
+
+      Inc(i);            //advance the pointer
+    end;
+
+  begin
+    //i := 0;    //first byte of wall layer
+    while (i - 4) < WallSize do
+    begin
+      if SameCmdInARow(i) then
+      begin
+        //check if only 2 (in such case they're a "set origin" command
+        if SameCmdInARow(i + 1) then
+        begin
+          //at least 3 in a row
+          //check the 4th
+          if SameCmdInARow(i + 2) then
+          begin
+            //there were 4, so do they are 2 Set Origin
+            //CONFIRMED a set origin here
+            SetOrigin(Buffer[i] and $1f, buffer[i + 1] and $1f, Buffer[i] and $e0);
+          end
+          else
+          begin
+            //ok, it was definitely 3... so first one is DRAW, the next ones are "set origin"
+            //CONFIRMED, do a DRAW
+            DrawCmd(Buffer[i], CurrentPat);
+          end;
+        end
+        else
+        begin
+          //ok, only 2... do a set origin
+          //CONFIRMED a set origin here
+          SetOrigin(Buffer[i] and $1f, buffer[i + 1] and $1f, Buffer[i] and $e0);
+        end;
+      end
+      else
+      begin
+        //no 2 in a row, so it's a "draw command"
+        //do the draw cmd
+        //CONFIRMED
+        DrawCmd(Buffer[i], CurrentPat);
+      end;
+    end;
+  end;
+
+  procedure DecodeObjects;
+  var
+    MazePtr: integer = 0;
+    LastObj: integer = 0;
+    c: integer;
+  begin
+    while ObjectLayerSize > 0 do
+    begin
+      case Buffer[i] of
+        $80..$ff:  //count spaces
+        begin
+          Inc(MazePtr, (Buffer[i] and $7f) + 1);
+          Inc(i);
+          Dec(ObjectLayerSize);
+        end;
+        $40..$7f, $13..$3e:  //object or enemy
+        begin
+          self.PokeMapData(MazePtr, Buffer[i]);
+          LastObj := Buffer[i];
+          Inc(MazePtr);
+          Inc(i);
+          Dec(ObjectLayerSize);
+        end;
+        $3f:           //set player position
+        begin
+          //self.PokeMapData(MazePtr, Buffer[i]);
+          self.SetPlayerPos(MazePtr mod 32, MazePtr div 32);
+          Inc(MazePtr);
+          Inc(i);
+          Dec(ObjectLayerSize);
+        end;
+        $00..$12:              //repeat previous object
+        begin
+          for c := 0 to Buffer[i] do
+          begin
+            self.PokeMapData(MazePtr, LastObj);
+            Inc(MazePtr);
+          end;
+          Inc(i);
+        end;
+      end;
+    end;
+  end;
+
+begin
+  //read LSB of size
+  self.FBuffer.Seek(0, TSeekOrigin.soBeginning);
+  self.FSize := FBuffer.ReadByte;                   // +0
+  TempByte := FBuffer.ReadByte;                     // +1
+
+  self.FHorzWrap := ((TempByte shr 7) and 1) = 1;
+  self.FVertWrap := ((TempByte shr 6) and 1) = 1;
+  self.FOneExit := ((TempByte shr 2) and 1) = 1;
+  self.FStunPlayers := ((TempByte shr 1) and 1) = 1;
+  self.FHurtPlayers := ((TempByte shr 0) and 1) = 1;
+
+  TempByte := FBuffer.ReadByte;                     // +2
+
+  self.FSize := self.FSize + 256 * ((TempByte shr 7) and 1);
+  self.FStyle := gauntStyles[(TempByte shr 3) and 7];
+  WallSize := FBuffer.ReadByte;                     // +3
+  ObjectLayerSize := self.FSize - 4 - WallSize;
+
+  Buffer := FBuffer.Memory;
+  i := 4;   //start of wall decoding
+  DecodeWalls;
+  //"i" is supposed to be the index pointing to the object layer start
+  DecodeObjects;
 end;
 
 procedure TGauntMaze.FromFileStream(fs: TFileStream);
@@ -841,6 +1054,7 @@ begin
     ypos := fs.ReadByte;
     self.FHorzWrap := fs.ReadByte <> 0;
     self.FVertWrap := fs.ReadByte <> 0;
+    self.FOneExit := fs.ReadByte <> 0;
     self.FHurtPlayers := fs.ReadByte <> 0;
     self.FStunPlayers := fs.ReadByte <> 0;
     self.FStyle := gauntStyles[fs.ReadByte];
@@ -850,8 +1064,12 @@ begin
     end;
     self.SetPlayerPos(xpos, ypos);
   except
-    on E: Exception do GauntDebugLn('Error loading maze ' + self.Name +
-        ' to file ' + fs.FileName + ': ' + E.Message);
+    on E: Exception do
+    begin
+      GauntDebugLn('Error loading maze ' + self.Name + ' to file ' +
+        fs.FileName + ': ' + E.Message);
+      raise;
+    end;
   end;
   //fs.Free; //must be freed from the outside to allow loading a sequence of maps
 end;

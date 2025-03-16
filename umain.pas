@@ -51,6 +51,7 @@ type
     bvSpacer1: TcyBevel;
     bvSpacer2: TcyBevel;
     cbWrapH: TplCheckBox;
+    cbOneExit: TplCheckBox;
     cypanelMain: TCyPanel;
     cyFlyingContainer1: TcyFlyingContainer;
     aExit: TFileExit;
@@ -77,6 +78,7 @@ type
     procedure aSaveExportExecute(Sender: TObject);
     procedure aShowMazeToolsExecute(Sender: TObject);
     procedure cbDamageChange(Sender: TObject);
+    procedure cbOneExitClick(Sender: TObject);
     procedure cbWrapHClick(Sender: TObject);
     procedure cbWrapVClick(Sender: TObject);
     procedure dgMapClick(Sender: TObject);
@@ -294,7 +296,8 @@ begin
     TATTabs(Sender).TabIndex).TabObject).GetVertWrap();
   cbWrapH.Checked := TGauntMaze(tabsMain.GetTabData(
     TATTabs(Sender).TabIndex).TabObject).GetHorzWrap();
-
+  cbOneExit.Checked := TGauntMaze(tabsMain.GetTabData(
+    TATTabs(Sender).TabIndex).TabObject).GetOneExit();
   //sync damage others mode
   if (TGauntMaze(tabsMain.GetTabData(TATTabs(Sender).TabIndex).TabObject).HurtPlayers
     =
@@ -354,6 +357,7 @@ var
   MapCol, MapRow: integer;
   cell: integer;
   trapBound: boolean = False;
+  m: TGauntMaze; //DELETE
 begin
 
   //check if cell belongs to frame
@@ -384,6 +388,8 @@ begin
       //normalize col/row first to match matrix indices
       MapCol := aCol - 1;
       MapRow := aRow - 1;
+      m := TGauntMaze(
+        tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
       cell := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData
         [MapCol, MapRow];
       if (cell and $80) <> 0 then
@@ -609,6 +615,12 @@ begin
   end;
 end;
 
+procedure TfMain.cbOneExitClick(Sender: TObject);
+begin
+  TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetOneExit(
+    cbOneExit.Checked);
+end;
+
 procedure TfMain.aGoEditNameExecute(Sender: TObject);
 begin
   self.leName.ReadOnly := False;
@@ -646,8 +658,9 @@ begin
     mrOk:                    //one maze loaded or imported
     begin
       tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[0];
-      tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
-        TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
+      if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name <> '' then
+        tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
+          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
       tabsMain.GetTabData(tabsMain.TabIndex).TabHint :=
         TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
       SyncTab(tabsMain);
