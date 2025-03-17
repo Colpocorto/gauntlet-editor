@@ -20313,6 +20313,7 @@ object fSaveExport: TfSaveExport
     object aCancel: TAction
       Caption = 'Cancel'
       Enabled = False
+      ShortCut = 27
       OnExecute = aCancelExecute
     end
     object aExportCollection: TAction

@@ -39,6 +39,8 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Check max block size (#d000-#de7f). The MSX DSK version copies things at #de80 and it can break the last block. MSX ROM/TZX and ZX/CPC have different limits. Take the biggest known block as reference.
 * Investigate the unknown flag
 * Check load/import dialogs (they have SAVE button)
+* Add the missing flag: choose one EXIT only 
+* Draw gates better (use the right pattern depending on the direction)
 - Fix memory leaks
 - Support for the ZX Spectrum version
     -export block
@@ -62,4 +64,10 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Trap block tool must toggle trap-notrap
 - Add SAVE AS or DUPLICATE (I prefer the latter)
 - Use local config to avoid writing in protected areas
-- Add the missing flag: choose one EXIT only 
+- Add a default name when a maze is imported
+- Analyse vertical wrap. Stock levels do write on the top border.
+- Add a shortcut to close tabs
+- Analyse 8 and 9 from MAZE03 (something looks wrong)
+    * 9 in MAZE10. Last byte is #5C, should be #36 (due to the MSX block bug).
+    - 8 in MAZE10. Has exits on top border, but hasn't wrap flag enabled
+    

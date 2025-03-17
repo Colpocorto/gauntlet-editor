@@ -863,6 +863,7 @@ var
     y: byte = 0;
     WallCount: byte;
     CurrentPat: byte = $10;
+    CurrentCmd: byte = $e0;
 
     function SameCmdInARow(index: integer): boolean;
     begin
@@ -877,6 +878,7 @@ var
 
     procedure SetOrigin(Ax, Ay: byte; Acmd: byte);
     begin
+      CurrentCmd := Acmd;
       x := Ax;
       y := Ay;
       case Acmd of
@@ -909,12 +911,30 @@ var
       i := i + 2;
     end;
 
-    procedure DrawCmd(Acmd: byte; Pattern: byte);
+    procedure DrawCmd(Acmd: byte; AOrgCmd: byte);
     var
       c: byte;
       f: byte;
       SD: TSearchDir;
+      pattern: byte;
     begin
+      //select drawing pattern
+      case AOrgCmd and $e0 of
+        $e0:
+          pattern := $10;
+        $c0:
+          pattern := $80 + $10;
+        $20:
+          pattern := $36;
+        $40, $80:
+          case Acmd and $e0 of
+            $00, $80:
+              pattern := $12;
+            else
+              pattern := $11;
+          end;
+      end;
+
       for f := 0 to length(SearchDirs) - 1 do
       begin
         if SearchDirs[f].byteCode = Acmd and $e0 then
@@ -954,7 +974,7 @@ var
           begin
             //ok, it was definitely 3... so first one is DRAW, the next ones are "set origin"
             //CONFIRMED, do a DRAW
-            DrawCmd(Buffer[i], CurrentPat);
+            DrawCmd(Buffer[i], CurrentCmd);
           end;
         end
         else
@@ -969,7 +989,7 @@ var
         //no 2 in a row, so it's a "draw command"
         //do the draw cmd
         //CONFIRMED
-        DrawCmd(Buffer[i], CurrentPat);
+        DrawCmd(Buffer[i], CurrentCmd);
       end;
     end;
   end;
@@ -1029,6 +1049,9 @@ begin
   self.FOneExit := ((TempByte shr 2) and 1) = 1;
   self.FStunPlayers := ((TempByte shr 1) and 1) = 1;
   self.FHurtPlayers := ((TempByte shr 0) and 1) = 1;
+
+  //update map border according to wrap
+  self.InitMapData;
 
   TempByte := FBuffer.ReadByte;                     // +2
 

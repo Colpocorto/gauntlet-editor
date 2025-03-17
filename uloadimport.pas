@@ -96,6 +96,7 @@ begin
         end;
       end;
     finally
+      if assigned(fs) then fs.Free;
     end;
   end;
 end;
@@ -155,6 +156,7 @@ begin
         end;
       end;
     finally
+      if assigned(fs) then fs.Free;
     end;
   end;
 end;

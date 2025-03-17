@@ -19982,6 +19982,7 @@ object fLoadImport: TfLoadImport
     end
     object aCancel: TAction
       Caption = 'Cancel'
+      ShortCut = 27
       OnExecute = aCancelExecute
     end
     object aImportCollection: TAction
