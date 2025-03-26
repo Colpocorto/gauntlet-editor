@@ -284,7 +284,7 @@ begin
       else
       begin
         //there is a compilation error
-        ShowMessage('Maze at Slot ' + IntToStr(verifyResult) +
+        ShowMessage('Maze at Slot ' + IntToStr(verifyResult + 1) +
           ' has errors. Please, open it on the editor and correct any issue, then try again.');
       end;
     end;

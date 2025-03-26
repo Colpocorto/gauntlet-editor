@@ -1247,6 +1247,7 @@ var
 begin
   //Return -1 if all blocks have been compiled successfully
   //Return -2 if size is too big
+  //Return -3 if there are no exits
   //Return i_maze if maze can't be verified
 
   case AType of

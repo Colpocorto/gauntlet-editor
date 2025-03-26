@@ -529,8 +529,8 @@ end;
 procedure TfMain.FormCloseQuery(Sender: TObject; var CanClose: boolean);
 begin
   while (tabsMain.TabCount > 0) and CanClose do
-    CanClose := tabsMain.DeleteTab(tabsMain.TabIndex, True, True, aocDefault,
-      adrClickOnXButton);
+    CanClose := tabsMain.DeleteTab(tabsMain.TabIndex, True, True,
+      aocDefault, adrClickOnXButton);
 end;
 
 procedure TfMain.dgMapClick(Sender: TObject);
@@ -879,10 +879,35 @@ begin
   else
     minCol := 1;
 
-  if (Col > minCol) and (Col < 33) and (Row > 1) and (Row < 33) and
+  if (Col > minCol) and (Col < 33) and (Row > 0) and (Row < 33) and
     (TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
     1, Row - 1] <> $3f) then
   begin
+    //writing cells on Row 0 (top border, Row = 0 on the map) is allowed but
+    //only horizontal wall or objects are allowed. Empty spaces are forbidden
+    if Row = 1 then
+    begin
+      case index of
+        0, $11, $12:
+          //do not allow to delete a block in top border, also gates are not allowed
+          index := TGauntMaze(tabsMain.GetTabData(
+            tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
+        $1..$10, $81..$90:
+        begin
+          case Col of
+            1:
+              //set corner
+              if minCol = 1 then
+                index := 6
+              else
+                index := 10;
+            else
+              index := 10; //horizontal wall
+          end;
+        end;
+      end;
+    end;
+
     //update map matrix
     if index <> TGauntMaze(tabsMain.GetTabData(
       tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1] then
