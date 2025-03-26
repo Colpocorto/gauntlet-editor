@@ -103,13 +103,7 @@
         <PackageName Value="KControlsLaz"/>
       </Item>
       <Item>
-        <PackageName Value="eccontrols"/>
-      </Item>
-      <Item>
         <PackageName Value="FCL"/>
-      </Item>
-      <Item>
-        <PackageName Value="SQLDBLaz"/>
       </Item>
       <Item>
         <PackageName Value="pl_ExControls"/>
@@ -128,12 +122,6 @@
       </Item>
       <Item>
         <PackageName Value="bgracontrols"/>
-      </Item>
-      <Item>
-        <PackageName Value="laz.virtualtreeview_package"/>
-      </Item>
-      <Item>
-        <PackageName Value="RunTimeTypeInfoControls"/>
       </Item>
       <Item>
         <PackageName Value="LCL"/>

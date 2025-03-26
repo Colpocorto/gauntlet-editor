@@ -9,9 +9,9 @@
       <Unit>
         <Filename Value="gauntletEditor.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
-        <TopLine Value="6"/>
-        <CursorPos X="35" Y="26"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="3"/>
+        <CursorPos Y="26"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
       </Unit>
@@ -22,10 +22,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uMain"/>
-        <EditorIndex Value="3"/>
-        <TopLine Value="291"/>
-        <CursorPos X="27" Y="207"/>
-        <FoldState Value=" T3kd0a015B1 PiEoY0:"/>
+        <EditorIndex Value="4"/>
+        <TopLine Value="517"/>
+        <CursorPos X="61" Y="531"/>
+        <FoldState Value=" T7jgJ51 PFAI T3mI0G111q"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -34,10 +34,11 @@
         <Filename Value="udata.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="uData"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="965"/>
-        <CursorPos X="38" Y="992"/>
-        <FoldState Value=" T3lc0r013V piWwC49022533 pkFte0A]9jOjg082]WglC0K5 Pj1j10 TL&apos;D0{3v"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="5"/>
+        <TopLine Value="1005"/>
+        <CursorPos X="78" Y="1022"/>
+        <FoldState Value=" T3la0r013N piWtR0J241 pkCjS4904411113 pjJu20A012]B5jg082]lglC0K311 PiZj10 TL&apos;G0{31"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
       </Unit>
@@ -48,11 +49,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uSaveExport"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="364"/>
-        <CursorPos X="21" Y="378"/>
-        <FoldState Value=" T3jS0Ev"/>
+        <CursorPos X="36" Y="12"/>
+        <FoldState Value=" T3jT0Eo"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -64,9 +63,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uMazeTools"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="32" Y="3"/>
+        <EditorIndex Value="2"/>
+        <CursorPos X="25" Y="7"/>
         <UsageCount Value="204"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="ukruskal.pas"/>
@@ -85,9 +86,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="uLoadImport"/>
-        <TopLine Value="254"/>
-        <CursorPos X="50" Y="279"/>
-        <FoldState Value=" T6kZ02w"/>
+        <TopLine Value="70"/>
+        <CursorPos X="57" Y="88"/>
+        <FoldState Value=" T6ka02T"/>
         <UsageCount Value="255"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -97,250 +98,209 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="3792"/>
         <CursorPos Y="3814"/>
-        <UsageCount Value="54"/>
+        <UsageCount Value="29"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\include\wincontrol.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="6167"/>
-        <CursorPos Y="6185"/>
-        <UsageCount Value="9"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\control.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2959"/>
-        <CursorPos Y="2976"/>
-        <UsageCount Value="9"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\customform.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1723"/>
-        <CursorPos Y="1745"/>
-        <UsageCount Value="7"/>
+        <TopLine Value="4056"/>
+        <CursorPos Y="4071"/>
+        <UsageCount Value="18"/>
       </Unit>
       <Unit>
         <Filename Value="..\ATFlatControls\atflatcontrols\attabs.pas"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="3948"/>
-        <CursorPos Y="3970"/>
-        <UsageCount Value="40"/>
+        <EditorIndex Value="6"/>
+        <TopLine Value="3783"/>
+        <CursorPos X="9" Y="3879"/>
+        <FoldState Value=" T3jiD2R1 PPT2_"/>
+        <UsageCount Value="132"/>
+        <Loaded Value="True"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\include\commondialog.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="6"/>
         <CursorPos Y="31"/>
-        <UsageCount Value="61"/>
+        <UsageCount Value="36"/>
       </Unit>
       <Unit>
         <Filename Value="uData_consts.inc"/>
-        <EditorIndex Value="5"/>
-        <TopLine Value="264"/>
-        <CursorPos X="14" Y="276"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="84" Y="13"/>
         <UsageCount Value="99"/>
-        <Loaded Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="D:\lazarus\lcl\include\containedaction.inc"/>
+        <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\BGRAControls\bccombobox.pas"/>
+        <UnitName Value="BCComboBox"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="86"/>
-        <CursorPos Y="100"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\customaction.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="236"/>
-        <CursorPos Y="248"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\BGRAControls\bcbutton.pas"/>
-        <UnitName Value="BCButton"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1530"/>
-        <CursorPos Y="1541"/>
-        <UsageCount Value="6"/>
+        <TopLine Value="449"/>
+        <CursorPos Y="480"/>
+        <UsageCount Value="74"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\include\control.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="2962"/>
+        <CursorPos Y="2978"/>
+        <UsageCount Value="11"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\include\messagedialogs.inc"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="111"/>
+        <CursorPos Y="130"/>
+        <UsageCount Value="71"/>
+      </Unit>
+      <Unit>
+        <Filename Value="D:\lazarus\lcl\interfaces\win32\win32wscontrols.pp"/>
+        <UnitName Value="Win32WSControls"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="577"/>
+        <CursorPos Y="599"/>
+        <UsageCount Value="11"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\include\winapi.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="415"/>
-        <CursorPos Y="429"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\dragmanager.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="677"/>
-        <CursorPos Y="691"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\forms.pp"/>
-        <UnitName Value="Forms"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="2079"/>
-        <CursorPos Y="2099"/>
-        <UsageCount Value="6"/>
+        <TopLine Value="606"/>
+        <CursorPos Y="627"/>
+        <UsageCount Value="11"/>
       </Unit>
       <Unit>
         <Filename Value="D:\lazarus\lcl\interfaces\win32\win32winapi.inc"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2040"/>
-        <CursorPos Y="2054"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\lclmessageglue.pas"/>
-        <UnitName Value="LCLMessageGlue"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="111"/>
-        <CursorPos Y="121"/>
-        <UsageCount Value="6"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\application.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="617"/>
-        <CursorPos Y="637"/>
-        <UsageCount Value="9"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\interfaces\win32\win32object.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="538"/>
-        <CursorPos Y="554"/>
-        <UsageCount Value="9"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\include\imglist.inc"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="1710"/>
-        <CursorPos Y="1727"/>
-        <UsageCount Value="8"/>
-      </Unit>
-      <Unit>
-        <Filename Value="D:\lazarus\lcl\widgetset\wsforms.pp"/>
-        <UnitName Value="WSForms"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="202"/>
-        <CursorPos Y="221"/>
-        <UsageCount Value="7"/>
+        <TopLine Value="2562"/>
+        <CursorPos Y="2591"/>
+        <UsageCount Value="11"/>
       </Unit>
       <Unit>
         <Filename Value="C:\Users\jam\AppData\Local\lazarus\onlinepackagemanager\packages\ct4laz\pl_components\pl_excontrols\source\TplCheckBoxUnit.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="233"/>
-        <CursorPos Y="251"/>
-        <UsageCount Value="9"/>
+        <TopLine Value="237"/>
+        <CursorPos Y="252"/>
+        <UsageCount Value="11"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="25">
+    <JumpHistory HistoryIndex="29">
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1155" TopLine="1131"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1153" TopLine="1131"/>
+        <Caret Line="1049" TopLine="983"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1155" TopLine="1131"/>
+        <Caret Line="1052" TopLine="986"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1153" TopLine="1131"/>
+        <Caret Line="1054" TopLine="988"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1155" TopLine="1131"/>
+        <Caret Line="1056" TopLine="990"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1153" TopLine="1131"/>
+        <Caret Line="1190" TopLine="1175"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1155" TopLine="1131"/>
+        <Caret Line="1039" TopLine="982"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1153" TopLine="1131"/>
+        <Caret Line="1041" TopLine="982"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1158" Column="7" TopLine="1131"/>
+        <Caret Line="1042" TopLine="982"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="1172" Column="32" TopLine="1157"/>
+        <Caret Line="1043" TopLine="982"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="977" Column="39" TopLine="822"/>
+        <Caret Line="1045" TopLine="982"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1046" TopLine="982"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1047" TopLine="982"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1048" TopLine="982"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1049" TopLine="983"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1052" TopLine="986"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1054" TopLine="988"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1056" TopLine="990"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1057" TopLine="991"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1058" TopLine="992"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1190" Column="24" TopLine="1166"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="69" Column="25" TopLine="56"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="846" Column="18" TopLine="821"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1021" TopLine="995"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1190" TopLine="1175"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="1021" TopLine="1007"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="187" TopLine="171"/>
+      </Position>
+      <Position>
+        <Filename Value="udata.pas"/>
+        <Caret Line="185" Column="32" TopLine="171"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="74" Column="16" TopLine="46"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="653" Column="36" TopLine="639"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="104" Column="24" TopLine="76"/>
-      </Position>
-      <Position>
-        <Filename Value="umain.pas"/>
-        <Caret Line="181" Column="13" TopLine="153"/>
+        <Caret Line="69" Column="25" TopLine="45"/>
       </Position>
       <Position>
         <Filename Value="udata.pas"/>
-        <Caret Line="395" Column="89" TopLine="375"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="97" Column="15" TopLine="88"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1027" Column="17" TopLine="860"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1042" TopLine="977"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1044" TopLine="1023"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1045" TopLine="1024"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="1165" TopLine="1149"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="97" Column="15" TopLine="90"/>
-      </Position>
-      <Position>
-        <Filename Value="udata.pas"/>
-        <Caret Line="929" Column="18" TopLine="912"/>
+        <Caret Line="846" Column="18" TopLine="821"/>
       </Position>
     </JumpHistory>
     <RunParams>
@@ -363,10 +323,27 @@
     </HistoryLists>
   </ProjectSession>
   <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkData"/>
+        <WatchData Value="TATTabData(Tab).FTabModified"/>
+        <WatchScope Value="wpsGlobal"/>
+        <WatchKind Value="wpkWrite"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="udata.pas"/>
+        <Line Value="1021"/>
+      </Item>
+    </BreakPoints>
     <Watches>
       <Item>
-        <Expression Value="self.MapData"/>
-        <DisplayFormat ArrayNavBarInherit="False"/>
+        <Expression Value="Tab"/>
+      </Item>
+      <Item>
+        <Expression Value="tabsMain"/>
       </Item>
     </Watches>
   </Debugging>

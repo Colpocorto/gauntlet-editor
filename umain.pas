@@ -6,21 +6,19 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, Grids,
-  PairSplitter, RTTICtrls, RTTIGrids, laz.VirtualTrees, Types, uData,
-  BufDataset, {DB,} ActnList, ComCtrls, LResources, LCLIntf, LCLtype, StdActns,
-  Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyFlyingContainer, cyBevel,
-  BCExpandPanels, BGRATheme, attabs, BGRABitmap, BGRACustomDrawn, BCComboBox,
-  BGRAGradientScanner, BGRABitmapTypes, GraphType, ImgList, uSaveExport, uMazeTools,
-  uLoadImport;
+  PairSplitter, Types, ActnList, ComCtrls, LCLIntf, LCLtype, StdActns,
+  Buttons, StdCtrls, TplCheckBoxUnit, cyPanel, cyBevel,
+  BCExpandPanels, attabs, BCComboBox, BGRABitmapTypes, GraphType, ImgList,
+  uData, uSaveExport, uMazeTools, uLoadImport;
 
 type
 
   { TfMain }
 
   TfMain = class(TForm)
+    aCloseTab: TAction;
     aSave: TAction;
     aShowMazeTools: TAction;
-    aGenerateDFSMaze: TAction;
     aLoadImport: TAction;
     aProcessMaze: TAction;
     aSaveExport: TAction;
@@ -53,7 +51,7 @@ type
     cbWrapH: TplCheckBox;
     cbOneExit: TplCheckBox;
     cypanelMain: TCyPanel;
-    cyFlyingContainer1: TcyFlyingContainer;
+    //cyFlyingContainer1: TcyFlyingContainer;
     aExit: TFileExit;
     ilStyles: TImageList;
     ilTools: TImageList;
@@ -70,7 +68,8 @@ type
     ilMenu: TImageList;
     ScrollBox1: TScrollBox;
     scrollOptions: TScrollBox;
-    procedure aGenerateDFSMazeExecute(Sender: TObject);
+    //    procedure aGenerateDFSMazeExecute(Sender: TObject);
+    procedure aCloseTabExecute(Sender: TObject);
     procedure aGoEditNameExecute(Sender: TObject);
     procedure aLoadImportExecute(Sender: TObject);
     procedure aProcessMazeExecute(Sender: TObject);
@@ -86,8 +85,11 @@ type
       aRect: TRect; aState: TGridDrawState);
     procedure dgMapMouseMove(Sender: TObject; Shift: TShiftState; X, Y: integer);
     procedure aStyleExecute(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormResize(Sender: TObject);
+    procedure tabsMainTabClose(Sender: TObject; ATabIndex: integer;
+      var ACanClose, ACanContinue: boolean);
     procedure tabsMainTabEmpty(Sender: TObject);
     procedure ToolButtonClick(Sender: TObject);
     procedure PatternButtonClick(Sender: TObject);
@@ -96,7 +98,6 @@ type
     procedure leNameKeyDown(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure tabsMainTabChanged(Sender: TObject);
     procedure tabsMainTabPlusClick(Sender: TObject);
-    //procedure timerMainTimer(Sender: TObject);
     procedure CreateOptionPanels(AContainer: TWinControl);
     procedure SelectButtonByStyle(styleId: integer);
     procedure WriteCell(grid: TCustomGrid; index: integer);
@@ -112,6 +113,7 @@ type
     procedure BindToTrap(Sender: TObject; shift: TShiftState);
     procedure PlacePlayer(Sender: TObject);
     procedure UpdateInfo(Sender: TObject);
+    procedure UpdateTabSave(ATab: TATTabData; TabModified: boolean);
   private
     procedure NameEdit;
     procedure CreateInfoCtrls(AParent: TCustomControl);
@@ -155,6 +157,7 @@ procedure TextRectOut(customControl: TCustomControl; rect: TRect;
   x, y: integer; Text: string);
 
 function GetShiftState(): TShiftState;
+
 
 var
   fMain: TfMain;
@@ -206,17 +209,25 @@ end;
 
 function TfMain.AddNewMaze: integer;
 var
-  tab1: TATTabData;
+  newTab: TATTabData;
+  newIndex: integer;
 begin
-  tab1 := TATTabData.Create(nil);
-  tab1.TabCaption := 'New Maze ' + IntToStr(tabsMain.TabCount + 1);
-  tab1.TabObject := TGauntMaze.Create(self);
-  TGauntMaze(tab1.TabObject).Name := tab1.TabCaption;
-  tabsMain.AddTab(tabsMain.TabCount, tab1);
-  tabsMain.ShowTab(tabsMain.TabCount - 1);
-  tabsMain.TabIndex := tabsMain.TabCount - 1;
-  Result := tabsMain.TabCount - 1;
-  tabsMain.GetTabData(tabsMain.TabIndex).TabModified := True;
+
+  //method .AddTab does't actually adds the object, it adds a COPY, so any property
+  //should have been set before adding (or getting the object with GetTabData)
+  newIndex := tabsMain.TabCount;
+  tabsMain.AddTab(newIndex, TATTabData.Create(nil));
+  //it's guaranteed that AddTab first enlarges the list by 1, then adds the item to TabCount-1
+
+  newTab := tabsMain.GetTabData(newIndex);
+  newTab.TabObject := TGauntMaze.Create(self);
+  tabsMain.TabIndex := newIndex;
+
+  TGauntMaze(newTab.TabObject).Name := 'New Maze ' + IntToStr(tabsMain.TabCount);
+  self.UpdateTabSave(newTab, True);
+  tabsMain.ShowTab(newIndex);
+  //ShowMessage(BoolToStr(newTab.TabModified));
+  Result := newIndex;
   dgMap.Enabled := True;
 end;
 
@@ -246,6 +257,70 @@ begin
   // hSplitterLeft.Width:=self.ClientWidth-hSplitterLeft.Left;
 end;
 
+procedure TfMain.tabsMainTabClose(Sender: TObject; ATabIndex: integer;
+  var ACanClose, ACanContinue: boolean);
+var
+  UserResponse: integer;
+  fs: TFileStream;
+  dlg: TSaveDialog;
+  FileName: string;
+begin
+  //ShowMessage( BoolToStr( tabsMain.GetTabData(ATabIndex).TabModified));
+  if not tabsMain.GetTabData(ATabIndex).TabModified then
+  begin
+    ACanClose := True;
+    Exit;
+  end;
+  UserResponse := MessageDlg('Do you want to save the file?',
+    mtConfirmation, [mbYes, mbNo, mbCancel], 0);
+  case UserResponse of
+    mrYes:
+    begin
+      if TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject).FileName = '' then
+      begin
+        dlg := TSaveDialog.Create(self);
+        dlg.Filter := 'Gauntlet Maze File|*.gmf';
+        dlg.Options := [ofOverwritePrompt, ofPathMustExist, ofEnableSizing,
+          ofViewDetail];
+        if dlg.Execute then
+          FileName := dlg.FileName
+        else
+        begin
+          ACanClose := False;
+          Exit;
+        end;
+        //aSaveExport.Execute;
+      end
+      else
+        FileName := TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject).FileName;
+      try
+        try
+          fs := TFileStream.Create(FileName, fmCreate);
+          TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject).ToFileStream(fs);
+          UpdateTabSave(tabsMain.GetTabData(ATabIndex), False);
+        except
+          on E: Exception do
+          begin
+            ShowMessage('Error while saving file ' + TGauntMaze(
+              tabsMain.GetTabData(ATabIndex).TabObject).FileName +
+              ': ' + E.Message);
+          end;
+        end;
+      finally
+        fs.Free;
+      end;
+    end;
+    mrNo:
+    begin
+      ACanClose := True;
+    end;
+    mrCancel: begin
+      ACanClose := False;
+      ACanContinue := False;
+    end;
+  end;
+end;
+
 procedure TfMain.tabsMainTabEmpty(Sender: TObject);
 begin
   dgMap.Enabled := False;
@@ -268,6 +343,8 @@ begin
     TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name :=
       leName.Text;
     tabsMain.GetTabData(tabsMain.TabIndex).TabCaption := leName.Text;
+    UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), tabsMain.GetTabData(
+      tabsMain.TabIndex).TabModified);
     leName.SelLength := 0;
   end;
 end;
@@ -299,8 +376,7 @@ begin
   cbOneExit.Checked := TGauntMaze(tabsMain.GetTabData(
     TATTabs(Sender).TabIndex).TabObject).GetOneExit();
   //sync damage others mode
-  if (TGauntMaze(tabsMain.GetTabData(TATTabs(Sender).TabIndex).TabObject).HurtPlayers
-    =
+  if (TGauntMaze(tabsMain.GetTabData(TATTabs(Sender).TabIndex).TabObject).HurtPlayers =
     False) and (TGauntMaze(tabsMain.GetTabData(
     TATTabs(Sender).TabIndex).TabObject).StunPlayers = False) then
   begin
@@ -357,7 +433,6 @@ var
   MapCol, MapRow: integer;
   cell: integer;
   trapBound: boolean = False;
-  m: TGauntMaze; //DELETE
 begin
 
   //check if cell belongs to frame
@@ -388,8 +463,7 @@ begin
       //normalize col/row first to match matrix indices
       MapCol := aCol - 1;
       MapRow := aRow - 1;
-      m := TGauntMaze(
-        tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
+
       cell := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData
         [MapCol, MapRow];
       if (cell and $80) <> 0 then
@@ -445,8 +519,18 @@ procedure TfMain.aStyleExecute(Sender: TObject);
 begin
   TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Style :=
     gauntStyles[TAction(Sender).ImageIndex];
-  dgMap.Repaint;
 
+  UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
+
+  dgMap.Invalidate;
+
+end;
+
+procedure TfMain.FormCloseQuery(Sender: TObject; var CanClose: boolean);
+begin
+  while (tabsMain.TabCount > 0) and CanClose do
+    CanClose := tabsMain.DeleteTab(tabsMain.TabIndex, True, True, aocDefault,
+      adrClickOnXButton);
 end;
 
 procedure TfMain.dgMapClick(Sender: TObject);
@@ -514,7 +598,12 @@ begin
   if (Col > 0) and (Row > 0) then
   begin
     maze := TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject);
+    //update modified flag
+
+    if (maze.GetPlayerPos.x <> Col - 1) or (maze.GetPlayerPos.y <> Row - 1) then
+      UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
     maze.SetPlayerPos(Col - 1, Row - 1);
+
   end;
 end;
 
@@ -539,12 +628,14 @@ begin
     //update map matrix
     currentValue := TGauntMaze(tabsMain.GetTabData(
       tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1];
-    if (currentValue < $11) and (currentValue > 0) then
+    if ((currentValue < $11) and (currentValue > 0)) or
+      ((currentValue < $91) and (currentValue > $80)) then
       //if cell contains other than a wall, do nothing. The engine supports binding
       //any object (even an EXIT!) to traps, but the encoding format doesn't support it :-(
     begin
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
         1, Row - 1] := currentValue xor $80;
+      UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
     end;
   end;
 
@@ -585,13 +676,15 @@ procedure TfMain.cbWrapVClick(Sender: TObject);
 begin
   TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetVertWrap(
     cbWrapV.Checked);
+  self.UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
 end;
 
 procedure TfMain.cbWrapHClick(Sender: TObject);
 begin
   TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetHorzWrap(
     cbWrapH.Checked);
-  dgMap.Repaint;
+  UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
+  dgMap.Invalidate;
 end;
 
 procedure TfMain.cbDamageChange(Sender: TObject);
@@ -613,80 +706,73 @@ begin
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).StunPlayers := True;
     end;
   end;
+  UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
 end;
 
 procedure TfMain.cbOneExitClick(Sender: TObject);
 begin
   TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).SetOneExit(
     cbOneExit.Checked);
+  UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
 end;
 
 procedure TfMain.aGoEditNameExecute(Sender: TObject);
 begin
   self.leName.ReadOnly := False;
   self.leName.Color := $5f5f5f;
+
+  UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
 end;
 
-procedure TfMain.aGenerateDFSMazeExecute(Sender: TObject);
-var
-  startX: integer;
-  startY: integer = 1;
+procedure TfMain.aCloseTabExecute(Sender: TObject);
 begin
-  //first, initialize the maze taking into account the boundaries
-  if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).GetHorzWrap then
-    startX := 0
-  else
-    startX := 1;
-
-  InitializeDFSMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData,
-    startX, startY);
-
-  GenerateDFSMaze(TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData,
-    startX, startY, 15, 15, 3);
-  dgMap.Repaint;
-
+  tabsMain.DeleteTab(tabsMain.TabIndex, True, True, aocDefault, adrClickOnXButton);
 end;
 
 procedure TfMain.aLoadImportExecute(Sender: TObject);
 var
   i: integer;
+  tab: TATTabData;
+  NumOfMazes: integer = 1;
 begin
-  {fLoadImport.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
-    tabsMain.TabIndex).TabObject));
-   }
   case fLoadImport.ShowModal of
-    mrOk:                    //one maze loaded or imported
+    mrOk:
     begin
-      tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[0];
-      if TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name <> '' then
-        tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
-          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
-      tabsMain.GetTabData(tabsMain.TabIndex).TabHint :=
-        TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
-      SyncTab(tabsMain);
-      dgMap.Repaint;
+      NumOfMazes := 1;
     end;
-    mrAll:                   //a whole block has been loaded or imported
+    mrAll:
     begin
-      //take it from uData.block
-      for i := 0 to length(block) - 1 do
-      begin
-        tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[i];
-        tabsMain.GetTabData(tabsMain.TabIndex).TabCaption :=
-          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).Name;
-        tabsMain.GetTabData(tabsMain.TabIndex).TabHint :=
-          TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
-        tabsMain.Repaint;
-        SyncTab(tabsMain);
-        dgMap.Repaint;
-      end;
+      NumOfMazes := length(block);
     end;
   end;
+  for i := 0 to NumOfMazes - 1 do
+  begin
+    tabsMain.GetTabData(self.AddNewMaze).TabObject := uData.block[i];
+    tab := tabsMain.GetTabData(tabsMain.TabIndex);
+    if TGauntMaze(tab.TabObject).Name <> '' then //it has been loaded, not imported
+      tab.TabCaption := TGauntMaze(tab.TabObject).Name
+    else
+    begin
+      //it has been imported, so it has no name, take it from the tab
+      TGauntMaze(tab.TabObject).Name :=
+        LeftStr(tab.TabCaption, length(tab.TabCaption) - 2);
+    end;
+    tab.TabHint := TGauntMaze(tab.TabObject).FileName;
+    //SyncTab causes the modified flag to become 'true' since it updates states
+    //Therefore it must be invoked before updating the Modified state
+    SyncTab(tabsMain);
 
-  {
-  if fLoadExport.ShowModal = mrOk then tabsMain.GetTabData(
-    tabsMain.TabIndex).TabExtModified2:=false;
-   }
+    //if there is just ONE maze and has been LOADED (not imported) it is expected
+    //to have its FileName property set, in such case set it as non-modified.
+    if TGauntMaze(tab.TabObject).FileName <> '' then
+      UpdateTabSave(tab, False)
+    else
+      UpdateTabSave(tab, True);
+
+    //tabsMain.Repaint;
+    dgMap.Repaint;
+  end;
+
 end;
 
 procedure TfMain.aProcessMazeExecute(Sender: TObject);
@@ -695,13 +781,11 @@ var
 begin
   processResult := TGauntMaze(tabsMain.GetTabData(
     tabsMain.TabIndex).TabObject).ProcessMap;
-  case processResult of
-    -1: ShowMessage('The walls layer is too big!');
-    -2: ShowMessage('The RLE layer is too big');
-    -3: ShowMessage('There is no EXIT');
-    else
-      ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
-  end;
+  if processResult < 0 then                  //negative numbers are errors
+    ShowMessage(ProcessResults.KeyData[processResult])
+  else
+    ShowMessage('Map compiled successfully. Size: ' + IntToStr(processResult));
+
 end;
 
 procedure TfMain.aSaveExecute(Sender: TObject);
@@ -720,6 +804,7 @@ begin
           TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName,
           fmCreate);
         TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).ToFileStream(fs);
+        UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), False);
       except
         on E: Exception do
         begin
@@ -755,6 +840,7 @@ begin
     tabsMain.GetTabData(
       tabsMain.TabIndex).TabHint :=
       TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).FileName;
+    UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), False);
   end;
 end;
 
@@ -763,6 +849,7 @@ begin
   fMazeTools.SetCurrentMaze(TGauntMaze(tabsMain.GetTabData(
     tabsMain.TabIndex).TabObject));
   fMazeTools.SetPreviewObject(dgMap);
+  fMazeTools.SetTab(tabsMain.GetTabData(tabsMain.TabIndex));
   fMazeTools.Show;
 end;
 
@@ -797,6 +884,9 @@ begin
     1, Row - 1] <> $3f) then
   begin
     //update map matrix
+    if index <> TGauntMaze(tabsMain.GetTabData(
+      tabsMain.TabIndex).TabObject).MapData[Col - 1, Row - 1] then
+      UpdateTabSave(tabsMain.GetTabData(tabsMain.TabIndex), True);
     TGauntMaze(tabsMain.GetTabData(tabsMain.TabIndex).TabObject).MapData[Col -
       1, Row - 1] := index;
   end;
@@ -924,7 +1014,7 @@ begin
     Name := 'imgInfo';
     Images := uData.ilMap;
     ImageIndex := patternIndexMap[$3f];
-    //    Picture.LoadFromFile('resources/treasure.png');
+
   end;
 
   //create hint panel
@@ -1317,6 +1407,21 @@ begin
   // Check if mouse left button is pressed
   if GetKeyState(VK_LBUTTON) < 0 then
     Include(Result, ssLeft);
+
+end;
+
+procedure TfMain.UpdateTabSave(ATab: TATTabData; TabModified: boolean);
+var
+  StrModified: string = '';
+begin
+  if TabModified then StrModified := ' ' + UnSavedSym
+  else
+    StrModified := '';
+
+  ATab.TabModified := TabModified;
+  ATab.TabCaption := TGauntMaze(ATab.TabObject).Name + StrModified;
+
+  tabsMain.Invalidate;
 
 end;
 

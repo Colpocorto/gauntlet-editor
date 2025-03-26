@@ -41,15 +41,37 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 * Check load/import dialogs (they have SAVE button)
 * Add the missing flag: choose one EXIT only 
 * Draw gates better (use the right pattern depending on the direction)
+* Fix "modified" glyph of TATTabs (not possible, changed to an old school *)
+    * Add "modified" handling
+    * List of actions that cause a TGauntMaze to modify:
+        * Change Style
+        * Change H Wrap
+        * Change V Wrap
+        * Change Damage
+        * Change Keep One Exit
+        * Change Name
+        * Write cell
+        * Place character
+        * Trap
+        * Use maze tools
+* Check ATCombobox as an alternative (check styling in the examples provided) (NOT VALID)
+* Add a default name when a maze is imported
+* Add a shortcut to close tabs
+* Trap block tool must toggle trap-notrap
+* Try to close all tabs when closing application
+* Analyse vertical wrap. Stock levels do write on the top border.
+    * Analyse 8 and 9 from MAZE03 (something looks wrong)
+        * 9 in MAZE10. Last byte is #5C, should be #36 (due to the MSX block bug).
+        * 8 in MAZE10. Has exits on top border, but hasn't wrap flag enabled. Check in the game.
 - Fix memory leaks
 - Support for the ZX Spectrum version
-    -export block
+    +export block
     -export TZX
-    -import block
+    +import block
 - Support for the Amstrad CPC version
-    -export block
+    +export block
     -export CDT
-    -import block    
+    +import block    
 - Apply styles on the zoom
 - Preview based on WebMSX
 - Undo/Redo
@@ -58,16 +80,7 @@ On Linux, the libsqlite3-dev package is a prerequisite.
 - Fix font resolution issues on Linux
 - Check compilation on Mac
 - Use TFPGMap to implement the index-pattern map.
-- Fix "modified" glyph of TATTabs
-    - Add "modified" handling
 - Change TMemoryBuffer copy for a direct method
-- Trap block tool must toggle trap-notrap
 - Add SAVE AS or DUPLICATE (I prefer the latter)
 - Use local config to avoid writing in protected areas
-- Add a default name when a maze is imported
-- Analyse vertical wrap. Stock levels do write on the top border.
-- Add a shortcut to close tabs
-- Analyse 8 and 9 from MAZE03 (something looks wrong)
-    * 9 in MAZE10. Last byte is #5C, should be #36 (due to the MSX block bug).
-    - 8 in MAZE10. Has exits on top border, but hasn't wrap flag enabled
     

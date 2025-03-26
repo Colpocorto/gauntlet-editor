@@ -1,3 +1,4 @@
+  UnSavedSym ='*'; //'⚫';
   WALL_GEN_ID = $10;
   MAX_TRACE_SIZE = 255 - 4;
   MAX_ITEM_SIZE = (512 - MAX_TRACE_SIZE);

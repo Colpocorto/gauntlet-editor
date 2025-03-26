@@ -159,7 +159,6 @@ implementation
 constructor TGauntMaze.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  //FTraceLayer := TList.Create;
   self.FBuffer := TMemoryStream.Create;
   self.InitVisitedData;
   self.InitMapData;
@@ -180,7 +179,6 @@ end;
 
 destructor TGauntMaze.Destroy;
 begin
-  //FTraceLayer.Free;
   self.FBuffer.Free;
   inherited Destroy;
 end;
@@ -1019,8 +1017,14 @@ var
         end;
         $3f:           //set player position
         begin
-          //self.PokeMapData(MazePtr, Buffer[i]);
-          self.SetPlayerPos(MazePtr mod 32, MazePtr div 32);
+
+          //can't use SetPlayerPos here (it may happens that the character is
+          //placed over a non-empty block, but SetPlayerPos has been designed to
+          //disallow that)
+          self.PokeMapData(MazePtr, Buffer[i]);
+          self.FPlayerPos.X := MazePtr mod 32;
+          self.FPlayerPos.Y := MazePtr div 32;
+
           Inc(MazePtr);
           Inc(i);
           Dec(ObjectLayerSize);
@@ -1082,6 +1086,7 @@ begin
     self.FHurtPlayers := fs.ReadByte <> 0;
     self.FStunPlayers := fs.ReadByte <> 0;
     self.FStyle := gauntStyles[fs.ReadByte];
+
     for i := 0 to 32 * 32 - 1 do
     begin
       self.PokeMapData(i, fs.ReadByte);
@@ -1191,8 +1196,6 @@ begin
         Maze.DecodeMaze;
         ABlock[i] := Maze;
       end;
-
-
     except
       on E: Exception do
       begin

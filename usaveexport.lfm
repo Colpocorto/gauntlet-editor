@@ -10,6 +10,7 @@ object fSaveExport: TfSaveExport
   ClientWidth = 814
   Color = 3881787
   Font.Color = 15263976
+  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
   object panSelection: TPanel
     Left = 0

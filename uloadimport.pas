@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons, ExtCtrls,
-  StdCtrls, ActnList, BCButton, uData;
+  StdCtrls, ActnList, BCButton,
+  uData;
 
 type
 

@@ -6,8 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ActnList, ExtCtrls,
-  Buttons, StdCtrls, SpinEx,
-  RTTICtrls, BCButton, BCComboBox, BCFluentSlider, ECSpinCtrls, uData, uKruskal;
+  Buttons, StdCtrls, attabs, ATButtons, BCButton, BCComboBox, BCFluentSlider,
+  uData, uKruskal;
 
 type
 
@@ -55,12 +55,14 @@ type
   private
     FCurrentMaze: TGauntMaze;
     FPreviewObject: TControl;
+    FTab: TATTabData;        //used to inform the main form about changes
 
   public
     MapBackup: TGauntMap;
 
     procedure SetCurrentMaze(AMaze: TGauntMaze);
     procedure SetPreviewObject(obj: TControl);
+    procedure SetTab(ATab: TATTabData);
     procedure UpdatePreview;
     procedure BackupMaze;
     procedure RestoreMaze;
@@ -73,7 +75,8 @@ var
 
 implementation
 
-uses uMain;
+uses uMain;   //this is a workaround to solve an issue with TBGRAComboBoxes
+
   {$R *.lfm}
 
 procedure TfMazeTools.aCancelExecute(Sender: TObject);
@@ -130,7 +133,6 @@ begin
     2:
     begin
       //Kruskal's algorithm
-      //InitializeKruskalMaze(self.FCurrentMaze.MapData, startX, startY);
       GenerateKruskalMaze(self.FCurrentMaze.MapData, startX, startY,
         slideWeight.Value, 100 - slideWeight.Value);
     end;
@@ -148,6 +150,9 @@ end;
 procedure TfMazeTools.aOkExecute(Sender: TObject);
 begin
   self.BackupMaze; //store the new modification
+  fMain.UpdateTabSave(FTab, True);
+  //this coupling is not elegant, shall be fixed in future versions
+
   self.Close;
 end;
 
@@ -207,6 +212,11 @@ end;
 procedure TfMazeTools.SetPreviewObject(obj: TControl);
 begin
   FPreviewObject := obj;
+end;
+
+procedure TfMazeTools.SetTab(ATab: TATTabData);
+begin
+  FTab := ATab;
 end;
 
 procedure TfMazeTools.UpdatePreview;

@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Buttons, ExtCtrls,
-  EditBtn, StdCtrls, ActnList, kedits, BCButton, cyEditFilename, uData, fgl;
+  EditBtn, StdCtrls, ActnList, BCButton,
+  uData;
 
 type
 
@@ -223,7 +224,6 @@ begin
         if assigned(fsSave) then  fsSave.Free;
       end;
     end;
-
   end;
 end;
 

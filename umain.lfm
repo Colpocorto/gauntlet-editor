@@ -8,6 +8,7 @@ object fMain: TfMain
   ClientWidth = 1200
   Color = 3881787
   Font.Color = 15263976
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnResize = FormResize
   object hSplitter: TPairSplitter
@@ -78,12 +79,13 @@ object fMain: TfMain
         ColorBorderPassive = 4342338
         ColorTabActive = 4144959
         ColorTabPassive = 2039583
-        ColorFontModified = 14211288
+        ColorFontModified = 13684944
         OptButtonLayout = '<>,v'
         OptSpaceSide = 0
         OptSpaceBetweenTabs = 2
         OptSpaceXIncrementRound = 0
         OptShowFlatSepar = False
+        OptShowModifiedCircle = False
         OptShowXRounded = False
         OptShowPinnedText = '!'
         OptHintForX = 'Close tab'
@@ -98,6 +100,7 @@ object fMain: TfMain
         OptHintForUser4 = '4'
         OnTabClick = tabsMainTabChanged
         OnTabPlusClick = tabsMainTabPlusClick
+        OnTabClose = tabsMainTabClose
         OnTabEmpty = tabsMainTabEmpty
       end
     end
@@ -634,10 +637,6 @@ object fMain: TfMain
       ShortCut = 16463
       OnExecute = aLoadImportExecute
     end
-    object aGenerateDFSMaze: TAction
-      Caption = 'aGenerateDFSMaze'
-      OnExecute = aGenerateDFSMazeExecute
-    end
     object aShowMazeTools: TAction
       Caption = 'aShowMazeTools'
       OnExecute = aShowMazeToolsExecute
@@ -645,6 +644,14 @@ object fMain: TfMain
     object aSave: TAction
       ShortCut = 16467
       OnExecute = aSaveExecute
+    end
+    object aCloseTab: TAction
+      Caption = 'aCloseTab'
+      SecondaryShortCuts.Strings = (
+        'Ctrl+F4'
+      )
+      ShortCut = 16471
+      OnExecute = aCloseTabExecute
     end
   end
   object BCEPanelsOpt: TBCExpandPanels
