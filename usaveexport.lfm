@@ -10,8 +10,8 @@ object fSaveExport: TfSaveExport
   ClientWidth = 814
   Color = 3881787
   Font.Color = 15263976
-  LCLVersion = '4.0.0.2'
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   object panSelection: TPanel
     Left = 0
     Height = 248
@@ -4725,6 +4725,26 @@ object fSaveExport: TfSaveExport
       Top = 16
       Width = 238
       Caption = 'EXPORT FORMAT (ignored for normal saving)'
+    end
+    object Label2: TLabel
+      Left = 528
+      Height = 15
+      Top = 123
+      Width = 315
+      Caption = '————— Formats used for COLLECTION  import ————'
+      Font.Color = 6863080
+      Font.Style = [fsItalic]
+      ParentFont = False
+    end
+    object Label1: TLabel
+      Left = 56
+      Height = 15
+      Top = 123
+      Width = 447
+      Caption = '———————————— Formats used for BLOCK import ———————————'
+      Font.Color = 6863080
+      Font.Style = [fsItalic]
+      ParentFont = False
     end
   end
   object dlgSaveMaze: TSaveDialog

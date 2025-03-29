@@ -87,6 +87,7 @@ type
     procedure aStyleExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure tabsMainTabClose(Sender: TObject; ATabIndex: integer;
       var ACanClose, ACanContinue: boolean);
@@ -207,6 +208,14 @@ begin
   hSplitter.Position := dgMap.Width + 32;
 end;
 
+procedure TfMain.FormDestroy(Sender: TObject);
+var
+  i: integer;
+begin
+  FreeGraphics;
+  FreeAndNil(ToolBox);
+end;
+
 function TfMain.AddNewMaze: integer;
 var
   newTab: TATTabData;
@@ -226,9 +235,10 @@ begin
   TGauntMaze(newTab.TabObject).Name := 'New Maze ' + IntToStr(tabsMain.TabCount);
   self.UpdateTabSave(newTab, True);
   tabsMain.ShowTab(newIndex);
-  //ShowMessage(BoolToStr(newTab.TabModified));
+
   Result := newIndex;
   dgMap.Enabled := True;
+
 end;
 
 procedure TfMain.CreateOptionPanels(AContainer: TWinControl);
@@ -254,7 +264,6 @@ begin
 
   hSplitter.Width := self.ClientWidth;
 
-  // hSplitterLeft.Width:=self.ClientWidth-hSplitterLeft.Left;
 end;
 
 procedure TfMain.tabsMainTabClose(Sender: TObject; ATabIndex: integer;
@@ -264,11 +273,32 @@ var
   fs: TFileStream;
   dlg: TSaveDialog;
   FileName: string;
+  PosInBlock: integer;
+
+  procedure FreeTab;
+  begin
+    //free the attached object
+    if Assigned(TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject)) then
+    begin
+      PosInBlock := uData.FindMazeInBlock(
+        TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject));
+      if PosInBlock <> -1 then  uData.block[PosInBlock] := nil;
+      TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject).Free;
+      tabsMain.GetTabData(ATabIndex).TabObject := nil;
+    end;
+  end;
+
 begin
-  //ShowMessage( BoolToStr( tabsMain.GetTabData(ATabIndex).TabModified));
+  if ATabIndex = -1 then
+  begin
+    ACanClose := True;
+    ACanContinue := True;
+    exit;
+  end;
   if not tabsMain.GetTabData(ATabIndex).TabModified then
   begin
     ACanClose := True;
+    FreeTab;
     Exit;
   end;
   UserResponse := MessageDlg('Do you want to save the file?',
@@ -289,7 +319,7 @@ begin
           ACanClose := False;
           Exit;
         end;
-        //aSaveExport.Execute;
+        FreeAndNil(dlg);
       end
       else
         FileName := TGauntMaze(tabsMain.GetTabData(ATabIndex).TabObject).FileName;
@@ -307,14 +337,16 @@ begin
           end;
         end;
       finally
-        fs.Free;
+        FreeAndNil(fs);
       end;
     end;
     mrNo:
     begin
       ACanClose := True;
+      FreeTab;
     end;
-    mrCancel: begin
+    mrCancel:
+    begin
       ACanClose := False;
       ACanContinue := False;
     end;
@@ -744,6 +776,10 @@ begin
     begin
       NumOfMazes := length(block);
     end;
+    else
+    begin
+      exit;
+    end;
   end;
   for i := 0 to NumOfMazes - 1 do
   begin
@@ -814,7 +850,7 @@ begin
         end;
       end;
     finally
-      fs.Free;
+      FreeAndNil(fs);
     end;
   end;
 end;
@@ -1281,7 +1317,7 @@ begin
     OnResize := @ExpandPanelResize;
   end;
 
-  tmppic.Free;
+  FreeAndNil(tmppic);
 
 end;
 
@@ -1435,6 +1471,8 @@ begin
 
 end;
 
+// Updates the save state of a tab, modifies its caption to indicate unsaved changes,
+// and refreshes the tab display to reflect the updated state.
 procedure TfMain.UpdateTabSave(ATab: TATTabData; TabModified: boolean);
 var
   StrModified: string = '';

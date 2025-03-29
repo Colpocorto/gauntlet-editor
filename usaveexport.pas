@@ -47,6 +47,8 @@ type
     editMazeFile8: TFileNameEdit;
     editMazeFile9: TFileNameEdit;
     ilExport: TImageList;
+    Label1: TLabel;
+    Label2: TLabel;
     lblCollection: TLabel;
     lblPanFormat: TLabel;
     lblSaveExportHint: TLabel;
@@ -80,6 +82,7 @@ type
     procedure btnOneMazeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CreateFileList;
+    procedure FormDestroy(Sender: TObject);
     function GetSelectedVersion(): TGauntVersion;
   private
     FCurrentMaze: TGauntMaze;
@@ -127,6 +130,11 @@ begin
   FMazeFileList.Add(7, self.editMazeFile8);
   FMazeFileList.Add(8, self.editMazeFile9);
   FMazeFileList.Add(9, self.editMazeFile10);
+end;
+
+procedure TfSaveExport.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(FMazeFileList);
 end;
 
 procedure TfSaveExport.btnOneMazeClick(Sender: TObject);
@@ -221,7 +229,7 @@ begin
           end;
         end;
       finally
-        if assigned(fsSave) then  fsSave.Free;
+        if assigned(fsSave) then  FreeAndNil(fsSave);
       end;
     end;
   end;
@@ -268,7 +276,7 @@ begin
                   ': ' + E.Message);
             end;
           finally
-            if assigned(fsSave) then fsSave.Free;
+            if assigned(fsSave) then FreeAndNil(fsSave);
           end;
         end;
         self.ModalResult := mrCancel;
@@ -322,7 +330,7 @@ begin
                 ': ' + E.Message);
           end;
         finally
-          if assigned(fsSave) then fsSave.Free;
+          if assigned(fsSave) then FreeAndNil(fsSave);
         end;
       end;
       self.ModalResult := mrOk;
@@ -363,7 +371,7 @@ begin
           ShowMessage('Error saving block ' + dlgSaveBlock.FileName + ': ' + E.Message);
       end;
     finally
-      if assigned(fsSave) then fsSave.Free;
+      if assigned(fsSave) then FreeAndNil(fsSave);
     end;
   end;
 end;

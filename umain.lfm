@@ -8,8 +8,10 @@ object fMain: TfMain
   ClientWidth = 1200
   Color = 3881787
   Font.Color = 15263976
+  LCLVersion = '4.0.0.3'
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnResize = FormResize
   object hSplitter: TPairSplitter
     Cursor = crDefault

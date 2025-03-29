@@ -166,12 +166,12 @@ begin
       end;
     end;
   finally
-    DS.Free;
+    FreeAndNil(DS);
     for i := 0 to Edges.Count - 1 do
     begin
       Dispose(PEdge(Edges.Items[i])); // Free allocated memory
     end;
-    Edges.Free;
+    FreeAndNil(Edges);
   end;
   //copy the temporary array to the actual maze
   for x := startX to 31 do

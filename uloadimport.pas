@@ -39,6 +39,8 @@ type
     dlgLoadBlock: TOpenDialog;
     dlgLoadMaze: TOpenDialog;
     ilImport: TImageList;
+    Label1: TLabel;
+    Label2: TLabel;
     lblCollection: TLabel;
     lblMazeBlock: TLabel;
     lblOneMaze: TLabel;
@@ -57,7 +59,6 @@ type
     procedure FormCreate(Sender: TObject);
     function GetSelectedVersion(): TGauntVersion;
   private
-    FMazeFileList: TMazeFileList;
   public
   end;
 
@@ -79,7 +80,7 @@ end;
 procedure TfLoadImport.aImportBlockExecute(Sender: TObject);
 var
   fs: TFileStream = nil;
-  Maze: TGauntMaze;
+
 begin
   if dlgImportBlock.Execute then
   begin
@@ -91,13 +92,13 @@ begin
       except
         on E: Exception do
         begin
-          ShowMessage('Error importing maze block' + dlgImportBlock.FileName +
+          ShowMessage('Error importing maze block ' + dlgImportBlock.FileName +
             ': ' + E.Message);
           self.ModalResult := mrNo;
         end;
       end;
     finally
-      if assigned(fs) then fs.Free;
+      if assigned(fs) then FreeAndNil(fs);
     end;
   end;
 end;
@@ -132,7 +133,7 @@ begin
         end;
       end;
     finally
-      if assigned(fs) then fs.Free;
+      if assigned(fs) then FreeAndNil(fs);
     end;
   end;
 end;
@@ -151,13 +152,13 @@ begin
       except
         on E: Exception do
         begin
-          ShowMessage('Error loading maze block' + dlgLoadBlock.FileName +
+          ShowMessage('Error loading maze block ' + dlgLoadBlock.FileName +
             ': ' + E.Message);
           self.ModalResult := mrNo;
         end;
       end;
     finally
-      if assigned(fs) then fs.Free;
+      if assigned(fs) then FreeAndNil(fs);
     end;
   end;
 end;
@@ -185,7 +186,7 @@ begin
         end;
       end;
     finally
-      if assigned(fs) then fs.Free;
+      if assigned(fs) then FreeAndNil(fs);
     end;
   end;
 end;

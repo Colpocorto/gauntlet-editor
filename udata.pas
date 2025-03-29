@@ -21,11 +21,14 @@ type
     Name: string;
     desc: string;
   end;
-  TCustomGauntTraceCmd = class abstract (TObject);
 
   TProcessResult = specialize TFPGMap<integer, string>;
   TMazeFileList = specialize TFPGMap<integer, TControl>;
 
+  // TSearchDir represents a direction for searching in the maze.
+  // - colInc: Column increment for the direction.
+  // - rowInc: Row increment for the direction.
+  // - byteCode: Encoded value representing the direction.
   TSearchDir = record
     colInc: smallint;
     rowInc: smallint;
@@ -133,6 +136,7 @@ var
   ActionStatus: integer;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
+procedure FreeGraphics;
 procedure InitData;
 procedure CleanData;
 procedure GauntDebugLn(ATextLine: string);
@@ -153,6 +157,7 @@ procedure BackupMap(var Source: TGauntMap; var destination: TGauntMap);
 function CheckAllFilesExist(FileList: TMazeFileList): integer;
 function VerifyBlock(var ABlock: TGauntBlock; AType: TGauntVersion;
   var Count: integer): integer;
+function FindMazeInBlock(AMaze: TGauntMaze): integer;
 
 implementation
 
@@ -160,13 +165,17 @@ constructor TGauntMaze.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   self.FBuffer := TMemoryStream.Create;
+  if not Assigned(self.FBuffer) then
+    raise Exception.Create('Failed to allocate memory for FBuffer');
   self.InitVisitedData;
   self.InitMapData;
   self.FStyle := gauntStyles[0];
   self.FHorzWrap := False;
   self.FVertWrap := False;
   self.FOneExit := False;
-  self.FStunPlayers := False;
+  self.Fid := GetUUID;
+  if self.Fid = '' then
+    raise Exception.Create('Failed to generate a valid UUID for TGauntMaze.');
   self.FHurtPlayers := False;
   self.Fid := GetUUID;
   self.FCreationDate := now;
@@ -179,12 +188,17 @@ end;
 
 destructor TGauntMaze.Destroy;
 begin
-  self.FBuffer.Free;
+  if Assigned(self.FBuffer) then
+    FreeAndNil(self.FBuffer);
   inherited Destroy;
 end;
 
 procedure TGauntMaze.SetPlayerPos(col: byte; row: byte);
 begin
+  //check bounds (<0 not needed since type is unsigned)
+  if col > 31 then col := 31;
+  if row > 31 then row := 31;
+
   //check if the new position is empty
   if self.MapData[col, row] = 0 then
   begin
@@ -232,7 +246,7 @@ begin
     Exit;
   end;
   ObjectLayerSize := ProcessObjectLayer;
-  if (4 + ObjectLayersize + TraceLayerSize) > 511 then
+  if (4 + ObjectLayerSize + TraceLayerSize) > 511 then
   begin
     Result := -2;    //object layer size not allowed!!
     Exit;
@@ -494,6 +508,7 @@ begin
         end;
       end;
     end;
+  Seq.strokes := [];
 end;
 
 function TGauntMaze.GetTraceOriginCode(AType: TSearchTraceType): byte;
@@ -564,12 +579,17 @@ end;
 
 function TGauntMaze.PeekMapData(offset: integer): byte;
 begin
+  if (offset < 0) or (offset >= 32 * 32) then
+    raise Exception.CreateFmt('Offset %d is out of bounds for MapData.', [offset]);
   Result := self.MapData[offset mod 32, offset div 32];
 end;
 
 procedure TGauntMaze.PokeMapData(offset: integer; Value: byte);
 begin
-  self.MapData[offset mod 32, offset div 32] := Value;
+  if (offset >= 0) and (offset < 32 * 32) then
+    self.MapData[offset mod 32, offset div 32] := Value
+  else
+    raise Exception.CreateFmt('Offset %d is out of bounds for MapData.', [offset]);
 end;
 
 function TGauntMaze.CountExits: integer;
@@ -697,11 +717,42 @@ begin
 end;
 
 procedure CleanData;
+var
+  i: integer;
 begin
   patternIndex := [];
+  patternIndexMap := [];
+
+  //clear block of mazes
+  for i := 0 to length(block) - 1 do
+  begin
+    if assigned(block[i]) then
+    begin
+      FreeAndNil(block[i]);
+    end;
+  end;
+
+  FreeAndNil(ProcessResults);
+  FreeGraphics;
+
   {dbConn.Close(True);
   dbConn.Free;
   transaction.Free;}
+end;
+
+function FindMazeInBlock(AMaze: TGauntMaze): integer;
+var
+  i: integer;
+begin
+  Result := -1;
+  for i := 0 to length(block) - 1 do
+  begin
+    if block[i] = AMaze then
+    begin
+      Result := i;
+      break;
+    end;
+  end;
 end;
 
 procedure loadGraphics(AOwner: TComponent; AWidth: integer);
@@ -737,7 +788,13 @@ begin
           ': ' + E.Message);
     end;
   end;
-  tmpPic.Free;
+  FreeAndNil(tmpPic);
+end;
+
+procedure FreeGraphics;
+begin
+  FreeAndNil(ilMap);
+  FreeAndNil(ilTools);
 end;
 
 procedure TGauntMaze.InitMap(var map: TGauntMap);
@@ -799,7 +856,6 @@ begin
     on E: Exception do GauntDebugLn('Error exporting maze ' + self.Name +
         ' to file ' + fs.FileName + ': ' + E.Message);
   end;
-  //fs.Free;
 end;
 
 procedure TGauntMaze.ToFileStream(fs: TFileStream);
@@ -857,15 +913,15 @@ var
 
   procedure DecodeWalls;
   var
-    x: byte = 0;
-    y: byte = 0;
+    x: byte = 24;  //some CPC levels start with a draw command, need default pos
+    y: byte = 24;
     WallCount: byte;
     CurrentPat: byte = $10;
     CurrentCmd: byte = $e0;
 
     function SameCmdInARow(index: integer): boolean;
     begin
-      if (index - 4) > WallSize - 1 then
+      if (index - 4) > WallSize - 2 then
         Result := False
       else
       if (Buffer[index] and $e0) = (Buffer[index + 1] and $e0) then
@@ -943,7 +999,11 @@ var
       end;
       for c := 0 to Acmd and $1f do
       begin
-        x := x + SD.colInc;
+        if (x + SD.colInc) < 0 then
+        begin
+          x := 31;
+          dec (y);
+        end else x := x + SD.colInc;
         y := y + SD.rowInc;
         self.MapData[x, y] := pattern;
       end;
@@ -961,8 +1021,8 @@ var
         if SameCmdInARow(i + 1) then
         begin
           //at least 3 in a row
-          //check the 4th
-          if SameCmdInARow(i + 2) then
+          //check the 4th (only if there are 4 or more bytes left to process)
+          if SameCmdInARow(i + 2) and ((i-4) < (Wallsize-3)) then
           begin
             //there were 4, so do they are 2 Set Origin
             //CONFIRMED a set origin here
@@ -1100,7 +1160,6 @@ begin
       raise;
     end;
   end;
-  //fs.Free; //must be freed from the outside to allow loading a sequence of maps
 end;
 
 procedure GauntDebugLn(ATextLine: string);
@@ -1171,7 +1230,7 @@ begin
         gvMSX_DSK:
           fs.Seek(7 + length(HEAD_DSK), TSeekOrigin.soBeginning);
         gvMSX:
-          fs.Seek(length(HEAD_DD_TSX), TSeekOrigin.soBeginning);
+          fs.Seek(3 + length(HEAD_DD_TSX), TSeekOrigin.soBeginning);
         gvZX:
           fs.Seek(2 + length(HEAD_DD_TZX), TSeekOrigin.soBeginning);
         gvCPC:
@@ -1422,7 +1481,6 @@ begin
       GauntDebugLn('Error writing maze to file ' + fs.FileName + ': ' + E.Message);
     end;
   end;
-  //fs.Free;
 end;
 
 procedure TGauntMaze.UpdateChecksum(var CheckSum: integer);
@@ -1450,11 +1508,10 @@ begin
       fs := TFileStream.Create(TFileNameEdit(FileList.KeyData[i]).FileName, fmOpenRead);
       maze.FromFileStream(fs);
       Block[i] := maze;
-      fs.Free;
-      fs := nil;
+      FreeAndNil(fs);
     end;
   finally
-    if assigned(fs) then fs.Free;
+    if assigned(fs) then FreeAndNil(fs);
   end;
 end;
 
