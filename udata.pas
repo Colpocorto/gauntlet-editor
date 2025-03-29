@@ -1097,6 +1097,7 @@ var
             Inc(MazePtr);
           end;
           Inc(i);
+          Dec(ObjectLayerSize); //BUG? CHECK
         end;
       end;
     end;
