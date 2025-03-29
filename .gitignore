@@ -61,3 +61,5 @@ release/
 zx/
 algorithm-backup/
 amstrad/
+gauntletEditor
+*.res
